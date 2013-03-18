@@ -1,0 +1,50 @@
+#version 410
+layout (location = 0) in vec3 VertexPosition;
+layout (location = 1) in vec3 VertexNormal;
+layout (location = 2) in vec2 VertexTexCoord;
+
+out vec4 EyePosition;
+out vec3 TNormal;
+out vec2 TexCoord;
+out vec4 LightWPosition;
+out float lightIntensity;
+
+// Coordinate to be used for shadow map lookup 
+out vec4 ShadowCoord;
+
+uniform float maxDist;
+uniform vec4 lightPos;
+
+//Matrices-----------------------------------------
+uniform mat4 ViewMatrix;
+uniform mat4 ModelViewMatrix;
+uniform mat3 NormalMatrix;
+uniform mat4 ProjectionMatrix;		   
+uniform mat4 ShadowMatrix;
+
+void main()
+{
+	// Convert normal and position to eye coords
+	
+	TexCoord = VertexTexCoord;
+	TNormal = normalize(NormalMatrix * VertexNormal);
+	EyePosition = ModelViewMatrix * vec4(VertexPosition,1.0);
+	LightWPosition = ViewMatrix * lightPos;
+	mat4 MVP = ProjectionMatrix * ModelViewMatrix;
+
+	// ShadowMatrix converts from modeling coordinates to shadow map coordinates.  
+	ShadowCoord = ShadowMatrix * vec4(VertexPosition,1.0);
+
+	vec4 tempVec = (ModelViewMatrix * vec4(VertexPosition,1.0)) - LightWPosition;
+
+	float lightDist = abs(length(tempVec));
+
+	if( lightDist > maxDist )
+		lightIntensity = 0;
+	else
+	{
+		lightIntensity = 1.0-(lightDist / maxDist);
+	}
+
+	gl_Position = MVP * vec4(VertexPosition,1.0);
+}
