@@ -10,7 +10,7 @@
 int windowWidth = 1280;
 int windowHeight = 720;
 int frameCount = 0;
-char windowTitle[128] = "Lab01";
+char windowTitle[128] = "Project 3DII";
 int shadowMapRes = 4096; 
 Camera cam;
 
@@ -19,6 +19,7 @@ GLuint billboardShaderProgHandle;
 
 Object3D bthObject;
 Object3D groundQuad;
+Object3D mHouse;
 vector<Object3D> mTreeList;
 
 Light pointLight;
@@ -199,6 +200,10 @@ void renderCallback()
 	glBindVertexArray(bthObject.mVAOHandle); // bind VAO
 	glDrawArrays( GL_TRIANGLES, 0, bthObject.GetVertexList()->size());
 
+	setShadowMatrices(mHouse.GetModelMatrix());
+	glBindVertexArray(mHouse.mVAOHandle); // bind VAO
+	glDrawArrays( GL_TRIANGLES, 0, mHouse.GetVertexList()->size());
+
 	glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
 	for(UINT i = 0; i < mTreeList.size(); i++)
 	{
@@ -216,15 +221,16 @@ void renderCallback()
 	glActiveTexture(GL_TEXTURE0);
 	glCullFace(GL_BACK);
 
-	float tileSize = 0.2f;
-	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
-
+	
 	//flytta till objectHandler-klass sen-----
 	mat4 projectionMatrix = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgHandle, "ProjectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
 	//----------------------------------------
 
 	//---2nd time----- from camera perspective------------------------------------------------
+	float tileSize = 0.2f;
+	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
+
 	setValues(groundQuad.GetModelMatrix());
 	glBindTexture(GL_TEXTURE_2D, groundQuad.mTextureHandle);
 	glBindVertexArray(groundQuad.mVAOHandle); 
@@ -237,6 +243,11 @@ void renderCallback()
 	glBindTexture(GL_TEXTURE_2D, bthObject.mTextureHandle);
 	glBindVertexArray(bthObject.mVAOHandle); // bind VAO
 	glDrawArrays( GL_TRIANGLES, 0, bthObject.GetVertexList()->size());
+
+	setValues(mHouse.GetModelMatrix());
+	glBindTexture(GL_TEXTURE_2D, mHouse.mTextureHandle);
+	glBindVertexArray(mHouse.mVAOHandle); // bind VAO
+	glDrawArrays( GL_TRIANGLES, 0, mHouse.GetVertexList()->size());
 
 	glBindTexture(GL_TEXTURE_2D, mTreeList[0].mTextureHandle);
 	glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
@@ -504,9 +515,13 @@ int main(int argc, char** argv){
 	groundQuad.CreateQuad();
 	groundQuad.LoadTexture("../Textures/blueStone.jpg", "JPG");
 
-	bthObject = Object3D(vec3(0, 0, -25), 0.5f, vec3(0.0));
-	bthObject.CreateObjFromFile("../Objects/Pepsi_Max_Can.obj");
-	bthObject.LoadTexture("../Textures/pepsi_max.jpg", "JPG");
+	bthObject = Object3D(vec3(70, 30, 0), 0.5f, vec3(0.0));
+	bthObject.CreateObjFromFile("../Objects/bth.obj");
+	bthObject.LoadTexture("../Textures/bthcolor.dds", "DDS");
+
+	mHouse = Object3D(vec3(-30, 0, -45), 0.08f, vec3(0.0, 25.0, 0.0));
+	mHouse.CreateObjFromFile("../Objects/house_obj.obj");
+	mHouse.LoadTexture("../Textures/house_diffuse.tga", "TGA");
 	
 	for(int i = 0; i < 5; i++)
 	{
