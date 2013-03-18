@@ -183,16 +183,16 @@ void ObjLoader::ParseFace3(std::ifstream& f)
 		count++;
 	}
 
-	//f >> tri;
-	/*sub = tri.substr(0, tri.find("/"));
-	if(tri.substr(0, tri.find("/")) != "f")
+	if(f.peek() != '\n')
 	{
+		string str;
+		f >> str;
 		int v[3];
 		for(int j = 0; j < 3; ++j)
 		{
-			sub = tri.substr(0, tri.find("/"));
-			int off = tri.find("/");
-			tri = tri.substr(off + 1);
+			sub = str.substr(0, str.find("/"));
+			int off = str.find("/");
+			str = str.substr(off + 1);
 			v[j] = atoi(sub.c_str()) - 1;
 			if ( off < 0 )
 				break;
@@ -208,10 +208,10 @@ void ObjLoader::ParseFace3(std::ifstream& f)
 		if ( v[2] >= 0 )
 			vn = mNormals[v[2]];
 
-		vertexPoints.push_back(vertexPoints[vertexPoints.size()-2]);
+		vertexPoints.push_back(vertexPoints[vertexPoints.size()-3]);
 		vertexPoints.push_back(vertexPoints[vertexPoints.size()-2]);
 		vertexPoints.push_back(VertexPoint(vp,vt,vn));
-	}*/
+	}
 }
 
 void ObjLoader::ParseMaterial(std::ifstream& f)

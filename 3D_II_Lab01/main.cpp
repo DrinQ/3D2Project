@@ -504,9 +504,9 @@ int main(int argc, char** argv){
 	groundQuad.CreateQuad();
 	groundQuad.LoadTexture("../Textures/blueStone.jpg", "JPG");
 
-	bthObject = Object3D(vec3(0, 40, -25), 0.5f, vec3(0.0));
-	bthObject.CreateObjFromFile("../Objects/bth.obj");
-	bthObject.LoadTexture("../Textures/bthcolor.dds", "DDS");
+	bthObject = Object3D(vec3(0, 0, -25), 0.5f, vec3(0.0));
+	bthObject.CreateObjFromFile("../Objects/Pepsi_Max_Can.obj");
+	bthObject.LoadTexture("../Textures/pepsi_max.jpg", "JPG");
 	
 	for(int i = 0; i < 5; i++)
 	{
