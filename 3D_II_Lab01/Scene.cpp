@@ -4,8 +4,11 @@
 
 Scene::Scene(int windowWidth, int windowHeight)
 {
-	mCameraProjectionMat = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
+	mCameraProjectionMat = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 5000.f);
 	mCam = new Camera();
+
+	mSkyBox = SkyBox("../Textures/CubeMaps/skybox", windowWidth, windowHeight);
+	mSkyBox.BindBuffers();
 }
 
 void Scene::CreateShadowMap(int res)
@@ -191,6 +194,15 @@ void Scene::Update()
 	mBthObject.Update();
 }
 
+void Scene::RenderSkyBox()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glUseProgram(skyboxShaderProgHandle);
+	mSkyBox.Draw(skyboxShaderProgHandle, mCameraProjectionMat, mCam->GetCamRotationMatrix());
+	glUseProgram(shaderProgHandle);
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
 void Scene::RenderShadowingObjects()
 {
 	recordDepthIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "recordDepth");
@@ -225,16 +237,16 @@ void Scene::RenderShadowingObjects()
 		SetShadowMatrices(mTreeList[i].GetModelMatrix());
 		glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	shadeWithShadowIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
+
+	//glUseProgram(shaderProgHandle);
+	glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &shadeWithShadowIndex);
 }
 
 void Scene::RenderObjects()
 {
-	shadeWithShadowIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
-
-	//glUseProgram(shaderProgHandle);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &shadeWithShadowIndex);
-	
 	glBindTexture(GL_TEXTURE_2D, mShadowMap.GetDepthTexHandle()); 
 	glActiveTexture(GL_TEXTURE0);
 	glCullFace(GL_BACK);
@@ -271,6 +283,7 @@ void Scene::RenderObjects()
 		SetValues(mTreeList[i].GetModelMatrix());
 		glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
 	}
+
 }
 
 void Scene::RenderLightSources()
@@ -292,6 +305,7 @@ void Scene::CreateShaderPrograms()
 {
 	shaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
 	billboardShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
+	skyboxShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/skyboxShader.vertex", "../Shaders/skyboxShader.fragment");
 }
 
 

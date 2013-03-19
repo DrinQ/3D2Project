@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object3D.cpp" />
@@ -89,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Object3D.h" />
@@ -105,6 +107,8 @@
     <None Include="..\Shaders\particleShader.vertex" />
     <None Include="..\Shaders\shader.fragment" />
     <None Include="..\Shaders\shader.vertex" />
+    <None Include="..\Shaders\skyboxShader.fragment" />
+    <None Include="..\Shaders\skyboxShader.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

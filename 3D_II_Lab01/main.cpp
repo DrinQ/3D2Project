@@ -27,6 +27,8 @@ void renderCallback()
 	frameCount++;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear buffer using colour
 
+	mScene->RenderSkyBox();
+
 	//---1st time---- from light perspective------------------------------------
 	//viewPort set in the function
 	mScene->RenderShadowingObjects();

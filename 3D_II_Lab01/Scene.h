@@ -6,6 +6,7 @@
 #include "ShadowMap.h"
 #include "ShaderHandler.h"
 #include "Camera.h"
+#include "SkyBox.h"
 
 class Scene
 {
@@ -18,6 +19,7 @@ private:
 	Light mPointLight;
 
 	ShadowMap mShadowMap;
+	SkyBox mSkyBox;
 	int mShadowMapRes;
 
 	GLuint recordDepthIndex;
@@ -26,6 +28,7 @@ private:
 	ShaderHandler mShaderHandler;
 	GLuint shaderProgHandle; // integer to get hold of our shader programme
 	GLuint billboardShaderProgHandle;
+	GLuint skyboxShaderProgHandle;
 
 	mat4 mCameraProjectionMat;
 
@@ -46,6 +49,7 @@ public:
 	void CreateShadowMap(int res);
 	void Update();
 
+	void RenderSkyBox();
 	void RenderShadowingObjects();
 	void RenderObjects();
 	void RenderLightSources();
@@ -53,7 +57,6 @@ public:
 	void CreateShaderPrograms();
 
 	void SetStaticUniforms();
-	void SetCameraViewMatrix(mat4 view);
 	
 	Camera* GetCam()
 	{ return mCam; }
