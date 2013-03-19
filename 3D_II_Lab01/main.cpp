@@ -393,7 +393,6 @@ int main(int argc, char** argv){
 
 	// initialise freeGLUT
 	glutInit(&argc, argv); // init freeGLUT with command line param list
-
 	Initialize();
 	
 	glutSetCursor(GLUT_CURSOR_NONE); //hide mouse cursor
