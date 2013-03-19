@@ -82,7 +82,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object3D.cpp" />
-    <ClCompile Include="ObjectHandler.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="ShaderHandler.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
@@ -92,7 +92,7 @@
     <ClInclude Include="includes.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Object3D.h" />
-    <ClInclude Include="ObjectHandler.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="ShaderHandler.h" />
     <ClInclude Include="ShadowMap.h" />

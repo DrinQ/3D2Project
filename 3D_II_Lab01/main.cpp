@@ -1,276 +1,43 @@
 #include "includes.h"
 #include <time.h>
-#include "TextureLoader.h"
-#include "ShaderHandler.h"
+//#include "TextureLoader.h"
+//#include "ShaderHandler.h"
+#include "Scene.h"
 
-#include "Camera.h"
-#include "Object3D.h"
-#include "Light.h"
-#include "ShadowMap.h"
+//#include "Camera.h"
+//#include "Object3D.h"
+//#include "Light.h"
+//#include "ShadowMap.h"
 
 int windowWidth = 1280;
 int windowHeight = 720;
 int frameCount = 0;
 char windowTitle[128] = "Project 3DII";
 int shadowMapRes = 4096; 
-Camera cam;
 
-ShaderHandler mShaderHandler;
-GLuint shaderProgHandle; // integer to get hold of our shader programme
-GLuint billboardShaderProgHandle;
-
-Object3D bthObject;
-Object3D groundQuad;
-Object3D mHouse;
-vector<Object3D> mTreeList;
-
-Light pointLight;
-
-ShadowMap mShadowMap;
-
-struct LightInfo{
-	vec4 LightPosition; // Light position in eye coords.
-	vec3 La;		    // Ambient light intensity
-	vec3 Ld;			// Diffuse light intensity
-	vec3 Ls;			// Specular light intensity
-	};
+Scene* mScene;
 
 void My_mouse_routine(int x, int y)
 	{
-		cam.SetMousePos(x, y); //place current mouse pos in mouseX, mouseY (in Camera class)
+		mScene->GetCam()->SetMousePos(x, y); //place current mouse pos in mouseX, mouseY (in Camera class)
 	}
 
-//Texture units, light and material properties
-void setStaticUniforms()
-{
-	glUseProgram(shaderProgHandle); //standard shader program
-	
-	//Texture units
-	GLuint loc = glGetUniformLocation(shaderProgHandle, "Tex1");
-		glUniform1i(loc, 0);
-	loc = glGetUniformLocation(shaderProgHandle, "ShadowMap");
-		glUniform1i(loc, 1);
-
-	//Light properties
-	float maxDist = pointLight.GetDistance();
-	LightInfo m_Light;
-	m_Light.LightPosition = vec4(pointLight.GetWorldPos(), 1.0f);	// Light position
-	m_Light.La = vec3(0.3f, 0.3f, 0.3f);			// Ambient light intensity
-	m_Light.Ld = pointLight.GetDiffuse();			// Diffuse light intensity
-	m_Light.Ls = pointLight.GetSpecular();			// Specular light intensity
-
-	//Material properties
-	MaterialInfo m_Material;
-	m_Material.Ka = groundQuad.GetMaterialInfo().Ka;			// Ambient reflectivity
-	m_Material.Kd = groundQuad.GetMaterialInfo().Kd;			// Diffuse reflectivity
-	m_Material.Ks = groundQuad.GetMaterialInfo().Ks;			// Specular reflectivity
-	m_Material.Shininess = groundQuad.GetMaterialInfo().Shininess;						// Specular shininess factor
-	
-	
-	//------
-	GLuint location = glGetUniformLocation(shaderProgHandle, "maxDist");	//gets the UniformLocation 
-	glUniform1fv(location, 1, &maxDist);
-
-	location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
-	glUniform4fv(location, 1, &m_Light.LightPosition[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Light.La");	//gets the UniformLocation
-	glUniform3fv(location, 1, &m_Light.La[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Light.Ld");	//gets the UniformLocation 
-	glUniform3fv(location, 1, &m_Light.Ld[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Light.Ls");	//gets the UniformLocation 
-	glUniform3fv(location, 1, &m_Light.Ls[0]);
-
-	//-------------------
-	location = glGetUniformLocation(shaderProgHandle, "Material.Ka");	//gets the UniformLocation from shader.vertex
-	glUniform3fv(location, 1, &m_Material.Ka[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Material.Kd");	//gets the UniformLocation from shader.vertex
-	glUniform3fv(location, 1, &m_Material.Kd[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Material.Ks");	//gets the UniformLocation from shader.vertex
-	glUniform3fv(location, 1, &m_Material.Ks[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Material.Shininess");	//gets the UniformLocation from shader.vertex
-	glUniform1fv(location, 1, &m_Material.Shininess);
-
-}
-
-void setShadowMatrices(mat4 model)
-{
-	mat4 Projection = mShadowMap.GetProjectionMatrix();
-	mat4 viewMatrix = mShadowMap.GetViewMatrix(); 
-	mat4 ModelView = viewMatrix * model; 
-
-	GLuint location = glGetUniformLocation(shaderProgHandle, "ModelViewMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &ModelView[0][0]); }
-
-	location = glGetUniformLocation(shaderProgHandle, "ProjectionMatrix");	//gets the UniformLocation from shader.vertex
-	if( location > 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &Projection[0][0]); }
-}
-
-void setValues(mat4 model)
-{
-	//matrices
-	mat4 Projection = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
-	mat4 viewMatrix = cam.GetCamViewMatrix();
-	//mat4 Projection = mShadowMap.GetProjectionMatrix();
-	//mat4 viewMatrix = mShadowMap.GetViewMatrix();
-	mat4 ModelView = viewMatrix * model; 
-	mat4 ShadowMatrix = mShadowMap.GetBiasMatrix() * mShadowMap.GetProjectionMatrix() * mShadowMap.GetViewMatrix() * model;
-	mat3 normalMatrix = glm::transpose(glm::inverse(mat3(ModelView)));
-
-	vec4 lightPos = vec4(pointLight.GetWorldPos(), 1.0f);
-
-	//Update uniforms
-	GLuint location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
-	glUniform4fv(location, 1, &lightPos[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "ShadowMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &ShadowMatrix[0][0]); }
-
-	location = glGetUniformLocation(shaderProgHandle, "ViewMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &viewMatrix[0][0]); }
-
-	location = glGetUniformLocation(shaderProgHandle, "ModelViewMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &ModelView[0][0]); }
-
-	location = glGetUniformLocation(shaderProgHandle, "NormalMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix3fv(location, 1, GL_FALSE, &normalMatrix[0][0]); }
-}
-
-void setLightValues()
-{
-	//matrices
-	//mat4 Projection = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
-	mat4 Model = glm::translate(pointLight.GetWorldPos());
-	mat4 viewMatrix = cam.GetCamViewMatrix();
-	mat4 ModelView = viewMatrix * Model; 
-
-	vec4 lightColor = vec4(pointLight.GetSpecular(), 1.0f) *1.2f;
-	float particleSize = 2.0;
-
-	//------------------Variables in particleShader.geometry-------------------
-	GLuint location = glGetUniformLocation(billboardShaderProgHandle, "Size2");	//gets the UniformLocation from shader.vertex
-	glUniform1fv(location, 1, &particleSize);
-
-	location = glGetUniformLocation(billboardShaderProgHandle, "lightColor");	//gets the UniformLocation from shader.vertex
-	glUniform4fv(location, 1, &lightColor[0]);
-
-
-	//------------------Matrices in particleShader.vertex-------------------------------------
-	location = glGetUniformLocation(billboardShaderProgHandle, "ModelViewMatrix");	//gets the UniformLocation from particleShader.vertex
-	if( location >= 0 )
-	{
-		glUniformMatrix4fv(location, 1, GL_FALSE, &ModelView[0][0]);
-	}
-}
-
-void renderCallback() 
+void renderCallback()
 {
 	frameCount++;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear buffer using colour
 
-	GLuint recordDepthIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "recordDepth");
-	GLuint shadeWithShadowIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
-
-	glViewport(0, 0, shadowMapRes, shadowMapRes);
-	glUseProgram(shaderProgHandle);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, mShadowMap.GetShadowFBOHandle());
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &recordDepthIndex);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 0); 
-	glCullFace(GL_FRONT);
-	
-	//---1st time---- from light perspective----------------------------------------
-	setShadowMatrices(groundQuad.GetModelMatrix());
-	glBindVertexArray(groundQuad.mVAOHandle);
-	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4);
-
-	setShadowMatrices(bthObject.GetModelMatrix());
-	glBindVertexArray(bthObject.mVAOHandle); // bind VAO
-	glDrawArrays( GL_TRIANGLES, 0, bthObject.GetVertexList()->size());
-
-	setShadowMatrices(mHouse.GetModelMatrix());
-	glBindVertexArray(mHouse.mVAOHandle); // bind VAO
-	glDrawArrays( GL_TRIANGLES, 0, mHouse.GetVertexList()->size());
-
-	glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
-	for(UINT i = 0; i < mTreeList.size(); i++)
-	{
-		setShadowMatrices(mTreeList[i].GetModelMatrix());
-		glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
-	}
-
-	//----------------------------------------------------------------------------------------
+	//---1st time---- from light perspective------------------------------------
+	//viewPort set in the function
+	mScene->RenderShadowingObjects();
+	//--------------------------------------------------------------------------
 
 	glViewport(0, 0, windowWidth, windowHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &shadeWithShadowIndex);
+	//---2nd time----- from camera perspective----------------------------------
 	
-	glBindTexture(GL_TEXTURE_2D, mShadowMap.GetDepthTexHandle()); 
-	glActiveTexture(GL_TEXTURE0);
-	glCullFace(GL_BACK);
-
-	
-	//flytta till objectHandler-klass sen-----
-	mat4 projectionMatrix = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgHandle, "ProjectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
-	//----------------------------------------
-
-	//---2nd time----- from camera perspective------------------------------------------------
-	float tileSize = 0.15f;
-	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
-
-	setValues(groundQuad.GetModelMatrix());
-	glBindTexture(GL_TEXTURE_2D, groundQuad.mTextureHandle);
-	glBindVertexArray(groundQuad.mVAOHandle); 
-	glDrawArrays( GL_TRIANGLE_STRIP, 0, 4); 
-
-	tileSize = 1.0;
-	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
-
-	setValues(bthObject.GetModelMatrix());
-	glBindTexture(GL_TEXTURE_2D, bthObject.mTextureHandle);
-	glBindVertexArray(bthObject.mVAOHandle); // bind VAO
-	glDrawArrays( GL_TRIANGLES, 0, bthObject.GetVertexList()->size());
-
-	setValues(mHouse.GetModelMatrix());
-	glBindTexture(GL_TEXTURE_2D, mHouse.mTextureHandle);
-	glBindVertexArray(mHouse.mVAOHandle); // bind VAO
-	glDrawArrays( GL_TRIANGLES, 0, mHouse.GetVertexList()->size());
-
-	glBindTexture(GL_TEXTURE_2D, mTreeList[0].mTextureHandle);
-	glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
-	for(UINT i = 0; i < mTreeList.size(); i++)
-	{
-		setValues(mTreeList[i].GetModelMatrix());
-		glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
-	}
-	
-
-//-----------------------switch shader program------------------------
-	glUseProgram(billboardShaderProgHandle);
-	//flytta till objectHandler-klass sen-----
-	glUniformMatrix4fv(glGetUniformLocation(billboardShaderProgHandle, "ProjectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
-	setLightValues(); //select light in pointLights list
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glBindTexture(GL_TEXTURE_2D, pointLight.mTextureHandle);
-	glBindVertexArray(pointLight.mVAOHandle); // bind VAO
-	glDrawArrays( GL_POINTS, 0, 1);
+	mScene->RenderObjects();
+//-----------------------switch shader program-----------------------
+	mScene->RenderLightSources();
 
 	glutSwapBuffers(); // swap drawing back-buffer to displayed front buffer
 	glutPostRedisplay(); // flag for redraw
@@ -353,41 +120,41 @@ void Initialize()
 		printf("ERROR starting GLEW: %s\n", glewGetErrorString(err));
 	}
 }
+//
+//void CreateShaderPrograms()
+//{
+//	shaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
+//	billboardShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
+//}
 
-void CreateShaderPrograms()
-{
-	shaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
-	billboardShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
-}
-
-void CreateLights()
-{
-	pointLight = Light(vec3(0.0f, 85.0f, 15.0f), vec3(1.0f, 1.0f, 1.0f), vec3(0.9f, 0.9f, 0.9f), 500.0f, 0.2f);
-	pointLight.CreatePointlight();
-	pointLight.LoadTexture("../Textures/pointlight01.png", "png");
-}
-
-void CreateObjects()
-{
-	groundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
-	groundQuad.CreateQuad();
-	groundQuad.LoadTexture("../Textures/groundStone.jpg", "JPG");
-
-	bthObject = Object3D(vec3(70, 30, 0), 0.5f, vec3(0.0));
-	bthObject.CreateObjFromFile("../Objects/bth.obj");
-	bthObject.LoadTexture("../Textures/bthcolor.dds", "DDS");
-
-	mHouse = Object3D(vec3(-30, 0, -45), 0.08f, vec3(0.0, 25.0, 0.0));
-	mHouse.CreateObjFromFile("../Objects/house_obj.obj");
-	mHouse.LoadTexture("../Textures/house_diffuse.tga", "TGA");
-	
-	for(int i = 0; i < 5; i++)
-	{
-		mTreeList.push_back(Object3D(vec3(20-i*20, 0, 50+i*i), (rand() % 140 + 100)*0.01f, vec3(0.0)));
-	}
-	mTreeList[0].CreateObjFromFile("../Objects/gran.obj");
-	mTreeList[0].LoadTexture("../Textures/gran.png", "PNG");
-}
+//void CreateLights()
+//{
+//	mPointLight = Light(vec3(0.0f, 85.0f, 15.0f), vec3(1.0f, 1.0f, 1.0f), vec3(0.9f, 0.9f, 0.9f), 500.0f, 0.2f);
+//	mPointLight.CreatemPointLight();
+//	mPointLight.LoadTexture("../Textures/mPointLight01.png", "png");
+//}
+//
+//void CreateObjects()
+//{
+//	groundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
+//	groundQuad.CreateQuad();
+//	groundQuad.LoadTexture("../Textures/groundStone.jpg", "JPG");
+//
+//	bthObject = Object3D(vec3(70, 30, 0), 0.5f, vec3(0.0));
+//	bthObject.CreateObjFromFile("../Objects/bth.obj");
+//	bthObject.LoadTexture("../Textures/bthcolor.dds", "DDS");
+//
+//	mHouse = Object3D(vec3(-30, 0, -45), 0.08f, vec3(0.0, 25.0, 0.0));
+//	mHouse.CreateObjFromFile("../Objects/house_obj.obj");
+//	mHouse.LoadTexture("../Textures/house_diffuse.tga", "TGA");
+//	
+//	for(int i = 0; i < 5; i++)
+//	{
+//		mTreeList.push_back(Object3D(vec3(20-i*20, 0, 50+i*i), (rand() % 140 + 100)*0.01f, vec3(0.0)));
+//	}
+//	mTreeList[0].CreateObjFromFile("../Objects/gran.obj");
+//	mTreeList[0].LoadTexture("../Textures/gran.png", "PNG");
+//}
 
 int main(int argc, char** argv){
 
@@ -398,14 +165,15 @@ int main(int argc, char** argv){
 	glutSetCursor(GLUT_CURSOR_NONE); //hide mouse cursor
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	CreateShaderPrograms();
-	CreateLights();
-	CreateObjects();
+	glutWarpPointer(windowWidth*0.5, windowHeight*0.5);
 
-	mShadowMap = ShadowMap(pointLight.GetWorldPos(), pointLight.GetWorldPos()+vec3(0.0f, -1.0f, -0.01f), shadowMapRes, shadowMapRes);
-	mShadowMap.CreateShadowMapTexture();
-
-	setStaticUniforms();
+	mScene = new Scene(windowWidth, windowHeight);
+	mScene->CreateShaderPrograms();
+	mScene->CreateLights();
+	mScene->CreateObjects();
+	mScene->CreateShadowMap(shadowMapRes);
+	
+	mScene->SetStaticUniforms();
 	
 	//glutFullScreen();
 	int oldTimeSinceStart = 0;
@@ -417,27 +185,23 @@ int main(int argc, char** argv){
 		oldTimeSinceStart = timeSinceStart;
 		timeCounter += deltaTime;
 		
-
 		if(timeCounter > 16)
 		{
 			timeCounter = 0;
-			glutMainLoopEvent();
 			glutPassiveMotionFunc(My_mouse_routine); //gets the mousePointers x,y coordinates in glut window
-
-			cam.UpdateMatrices();
+			glutMainLoopEvent();
+			
+			mScene->GetCam()->UpdateMatrices();
 			if(GetAsyncKeyState(VK_SPACE) == 0)
-				cam.Control(0.8f, 0.08f, true, windowWidth*0.5f, windowHeight*0.5f);
-
-			pointLight.UpdateLights();
-			mShadowMap.SetLightPos(pointLight.GetWorldPos());
-			bthObject.Update();
+				mScene->GetCam()->Control(0.8f, 0.08f, true, windowWidth*0.5f, windowHeight*0.5f);
+			
+			mScene->Update();
 
 			if(GetAsyncKeyState(VK_ESCAPE) != 0)
 			{
 				return 0;
 			}
 		}
-			
 	}
 
 
