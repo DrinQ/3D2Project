@@ -15,6 +15,8 @@ public:
 	uint CreateShaderProgram(const char* shaderAFile, const char* shaderBFile, const char* shaderCFile);
 	int UpdateUniform(const char* variable, uint shaderProgHandle, float value); 
 	int UpdateUniform(const char* variable, uint shaderProgHandle, vec3 value); 
+	int UpdateUniform(const char* variable, uint shaderProgHandle, vec4 value); 
+	int UpdateUniform(const char* variable, uint shaderProgHandle, mat4 matrix);
 };
 
 #endif

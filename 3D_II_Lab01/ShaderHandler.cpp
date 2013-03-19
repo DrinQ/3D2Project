@@ -170,3 +170,27 @@ int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, ve
 
 	return 0;
 }
+
+int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, vec4 value)
+{
+	glUseProgram(shaderProgHandle);
+	//use same name for value in shader 
+	uint location = glGetUniformLocation(shaderProgHandle, variable);
+	if( location >= 0 )
+		{ glUniform4fv(location, 1, &value[0]); }
+	else return 1;
+
+	return 0;
+}
+
+int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, mat4 matrix)
+{
+	glUseProgram(shaderProgHandle);
+	//use same name for value in shader 
+	uint location = glGetUniformLocation(shaderProgHandle, variable);
+	if( location >= 0 )
+		{ glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]); }
+	else return 1;
+
+	return 0;
+}
