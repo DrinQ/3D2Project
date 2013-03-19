@@ -22,4 +22,6 @@ using glm::vec4;
 
 using namespace std;
 
+typedef unsigned int uint;
+
 #endif

@@ -1,6 +1,7 @@
 #include "includes.h"
 #include <time.h>
 #include "TextureLoader.h"
+#include "ShaderHandler.h"
 
 #include "Camera.h"
 #include "Object3D.h"
@@ -14,6 +15,7 @@ char windowTitle[128] = "Project 3DII";
 int shadowMapRes = 4096; 
 Camera cam;
 
+ShaderHandler mShaderHandler;
 GLuint shaderProgHandle; // integer to get hold of our shader programme
 GLuint billboardShaderProgHandle;
 
@@ -294,118 +296,6 @@ void timerCallback(int value) {
 	glutTimerFunc(250, timerCallback, 1); // start timer again (every 1/4 second)
 }
 
-bool compileShader(const char* shaderFileName, const int& type, GLuint& shaderHandle) {
-	// load file into string
-	ifstream file;
-	file.open(shaderFileName);
-	if (!file.is_open()) {
-		printf("ERROR creating opening shader file %s\n", shaderFileName);
-		return false;
-	}
-	string shaderString; // string to load shader into
-	char line[256];
-  while (!file.eof()) {
-    strcpy_s(line, "");
-    file.getline(line, 256);
-    shaderString += line;
-    shaderString += '\n';
-  }
-  file.close();
-
-	// create shader object
-	if (type == 0) {
-		shaderHandle = glCreateShader(GL_VERTEX_SHADER);
-	} else if (type == 1) {
-		shaderHandle = glCreateShader(GL_FRAGMENT_SHADER);
-	} else if (type == 2) {
-		shaderHandle = glCreateShader(GL_GEOMETRY_SHADER);
-	}
-	// validate creation
-	if (0 == shaderHandle) {
-		printf("ERROR creating shader type %i\n", type);
-		return false;
-	}
-
-	// load source from a char array
-	const char* ptr = shaderString.c_str(); // get character pointer from string
-	glShaderSource(shaderHandle, 1, &ptr, NULL);
-
-	// compile shader
-	glCompileShader(shaderHandle);
-
-	// Check for errors
-	int result = 0;
-	glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &result);
-	if(GL_FALSE == result) {
-		printf("ERROR compiling shader type %i\n", type);
-		int length = 0;
-		glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &length);
-		if(length > 0) {
-			// create a log of error messages
-			char* errorLog = new char[length];
-			int written = 0;
-			glGetShaderInfoLog(shaderHandle, length, &written, errorLog);
-			printf("Shader error log;\n%s\n", errorLog);
-			delete [] errorLog;
-		}
-		return false;
-	}
-	return true;
-}
-
-bool createShaderProgramme(const GLuint& shaderAHandle, const GLuint& shaderBHandle, GLuint& shaderProgrammeHandle) {
-	// create shader programme
-	shaderProgrammeHandle = glCreateProgram();
-	if (0 == shaderProgrammeHandle) {
-		printf("ERROR creating shader programme\n");
-		return false;
-	}
-	
-	// attach shaders
-	glAttachShader(shaderProgrammeHandle, shaderAHandle);
-	glAttachShader(shaderProgrammeHandle, shaderBHandle);
-	
-	// link programme
-	glLinkProgram(shaderProgrammeHandle);
-	
-	// verify link status
-	GLint status;
-	glGetProgramiv(shaderProgrammeHandle, GL_LINK_STATUS, &status);
-	if (GL_FALSE == status) {
-		printf("ERROR: failed to link shader programme\n");
-		return false;
-	}
-	
-	return true;
-}
-
-bool createParticleShaderProgramme(const GLuint& shaderAHandle, const GLuint& shaderBHandle, const GLuint& shaderCHandle, GLuint& shaderProgrammeHandle) {
-	// create shader programme
-	shaderProgrammeHandle = glCreateProgram();
-	if (0 == shaderProgrammeHandle) {
-		printf("ERROR creating shader programme\n");
-		return false;
-	}
-	
-	// attach shaders
-	glAttachShader(shaderProgrammeHandle, shaderAHandle);
-	glAttachShader(shaderProgrammeHandle, shaderBHandle);
-	glAttachShader(shaderProgrammeHandle, shaderCHandle);
-	
-	// link programme
-	glLinkProgram(shaderProgrammeHandle);
-	
-	// verify link status
-	GLint status;
-	glGetProgramiv(shaderProgrammeHandle, GL_LINK_STATUS, &status);
-	if (GL_FALSE == status) {
-		printf("ERROR: failed to link shader programme\n");
-		return false;
-	}
-	
-	return true;
-}
-
 void Initialize()
 {
 	// create Window on O/S using freeGLUT
@@ -464,53 +354,21 @@ void Initialize()
 	}
 }
 
-int CreateAndLinkShaderPrograms()
+void CreateShaderPrograms()
 {
-	//-------------------------------------------------------------------------------------------------
-	// load and compile shaders from text files - if there an error starting it is most likely a path here
-	GLuint vertexHandle, fragmentHandle;
-	if (!compileShader("../Shaders/shader.vertex", 0, vertexHandle)) { // this should be the path when running from inside visual studio
-		if (!compileShader("shader.vertex", 0, vertexHandle)) { return 1; } // but if that didn't work try the working directory
-	}
-	if (!compileShader("../Shaders/shader.fragment", 1, fragmentHandle)) {
-		if (!compileShader("shader.fragment", 1, fragmentHandle)) { return 1; }
-	}
-	// link shader programme
-	if (!createShaderProgramme(vertexHandle, fragmentHandle, shaderProgHandle)) { return 1; }
-
-//--------------------------Create light shader programme-------------------------------------------
-	GLuint partVertexHandle, partGeometryHandle, partFragmentHandle;
-	if (!compileShader("../Shaders/particleShader.vertex", 0, partVertexHandle)) { // this should be the path when running from inside visual studio
-		 return 1;
-	}
-	if (!compileShader("../Shaders/particleShader.fragment", 1, partFragmentHandle)) {
-		 return 1;
-	}
-	if (!compileShader("../Shaders/particleShader.geometry", 2, partGeometryHandle)) {
-		 return 1;
-	}
-	// link shader programme
-	if (!createParticleShaderProgramme(partVertexHandle, partGeometryHandle, partFragmentHandle, billboardShaderProgHandle)) { return 1; }
-//--------------------------------------------------------------------------------------------------
-	return 0;
+	shaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
+	billboardShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
 }
 
-int main(int argc, char** argv){
-
-	// initialise freeGLUT
-	glutInit(&argc, argv); // init freeGLUT with command line param list
-
-	Initialize();
-	
-	glutSetCursor(GLUT_CURSOR_NONE); //hide mouse cursor
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	if(CreateAndLinkShaderPrograms() == 1) return 1;
-
+void CreateLights()
+{
 	pointLight = Light(vec3(0.0f, 85.0f, 15.0f), vec3(1.0f, 1.0f, 1.0f), vec3(0.9f, 0.9f, 0.9f), 500.0f, 0.2f);
 	pointLight.CreatePointlight();
 	pointLight.LoadTexture("../Textures/pointlight01.png", "png");
+}
 
+void CreateObjects()
+{
 	groundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
 	groundQuad.CreateQuad();
 	groundQuad.LoadTexture("../Textures/blueStone.jpg", "JPG");
@@ -529,6 +387,21 @@ int main(int argc, char** argv){
 	}
 	mTreeList[0].CreateObjFromFile("../Objects/gran.obj");
 	mTreeList[0].LoadTexture("../Textures/gran.png", "PNG");
+}
+
+int main(int argc, char** argv){
+
+	// initialise freeGLUT
+	glutInit(&argc, argv); // init freeGLUT with command line param list
+
+	Initialize();
+	
+	glutSetCursor(GLUT_CURSOR_NONE); //hide mouse cursor
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	CreateShaderPrograms();
+	CreateLights();
+	CreateObjects();
 
 	mShadowMap = ShadowMap(pointLight.GetWorldPos(), pointLight.GetWorldPos()+vec3(0.0f, -1.0f, -0.01f), shadowMapRes, shadowMapRes);
 	mShadowMap.CreateShadowMapTexture();
