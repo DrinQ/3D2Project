@@ -230,7 +230,7 @@ void renderCallback()
 	//----------------------------------------
 
 	//---2nd time----- from camera perspective------------------------------------------------
-	float tileSize = 0.2f;
+	float tileSize = 0.15f;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
 
 	setValues(groundQuad.GetModelMatrix());
@@ -371,7 +371,7 @@ void CreateObjects()
 {
 	groundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
 	groundQuad.CreateQuad();
-	groundQuad.LoadTexture("../Textures/blueStone.jpg", "JPG");
+	groundQuad.LoadTexture("../Textures/groundStone.jpg", "JPG");
 
 	bthObject = Object3D(vec3(70, 30, 0), 0.5f, vec3(0.0));
 	bthObject.CreateObjFromFile("../Objects/bth.obj");
