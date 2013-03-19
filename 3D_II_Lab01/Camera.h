@@ -21,6 +21,7 @@ private:
 	float camYaw;
 	float camPitch;
 	mat4 mCamViewMat;
+	mat4 mRotationMat;
 
 public:
 	
@@ -38,6 +39,7 @@ public:
 	glm::vec3 GetCamPos();
 	void SetYPos(float y);
 	mat4 GetCamViewMatrix();
+	mat4 GetCamRotationMatrix();
 
 };
 

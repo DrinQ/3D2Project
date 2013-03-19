@@ -90,8 +90,8 @@ void Camera::UpdateMatrices()
 	vec3 up(0.0f, 1.0f, 0.0f); // vector pointing up from camera's head  (describes roll of camera)
 	mat4 lookAtMat = glm::lookAt(eye, centre, up);
 
-	mat4 rotationMat = glm::rotate(-camPitch, 1.0f, 0.0f, 0.0f) * glm::rotate(-camYaw, 0.0f, 1.0f, 0.0f);
-	mCamViewMat = rotationMat * lookAtMat;
+	mRotationMat = glm::rotate(-camPitch, 1.0f, 0.0f, 0.0f) * glm::rotate(-camYaw, 0.0f, 1.0f, 0.0f);
+	mCamViewMat = mRotationMat * lookAtMat;
 }
 
 float Camera::GetPitch()
@@ -117,4 +117,9 @@ void Camera::SetYPos(float y)
 mat4 Camera::GetCamViewMatrix()
 {
 	return mCamViewMat;
+}
+
+mat4 Camera::GetCamRotationMatrix()
+{
+	return mRotationMat;
 }
