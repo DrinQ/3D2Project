@@ -12,10 +12,10 @@ struct ObjMaterialData
 	float Kd[3];
 	float Ka[3];
 	float Tf[3];
-	std::string	map_Kd;
-	std::string bump;
-	std::string disp;
-	std::string occlusion;
+	string	map_Kd;
+	string bump;
+	string disp;
+	string occlusion;
 	float Ni;
 
 	ObjMaterialData()
@@ -35,9 +35,9 @@ struct ObjGroupData
 		UINT32 V[3][3];
 	};
 
-	std::string Name;
-	std::string Material;
-	std::vector<Triangle> Triangles;
+	string Name;
+	string Material;
+	vector<VertexPoint> mVertices;
 };
 
 typedef std::map<std::string, ObjMaterialData*> MAP_MATERIAL;
@@ -85,9 +85,15 @@ public:
 	void InitObject(char* filename);
 	HRESULT Load(char* filename);
 
-	
+	ObjGroupData* GetGroup(uint index);
+	ObjMaterialData* GetMaterial(string name);
 
-	vector<VertexPoint> GetVertexPoints();
+	int GetGroupCount()
+	{ return mGroups.size(); }
+	
+	vector<VertexPoint> GetVertexPoints()
+		{ return vertexPoints; }
+
 };
 
 #endif

@@ -12,8 +12,8 @@ newmtl 01___Default
 	Kd 0.4471 0.4471 0.4471
 	Ks 0.5580 0.5580 0.5580
 	Ke 0.0000 0.0000 0.0000
-	map_Ka C:\Users\Mihai\Desktop\Pepsi_Max\Max_2011\Texture\pepsi_max.jpg
-	map_Kd C:\Users\Mihai\Desktop\Pepsi_Max\Max_2011\Texture\pepsi_max.jpg
+	map_Ka pepsi_max.jpg
+	map_Kd pepsi_max.jpg
 	map_refl Map__1_Raytrace.tga
 
 newmtl 02___Default

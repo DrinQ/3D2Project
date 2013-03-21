@@ -54,7 +54,7 @@ HRESULT ObjLoader::Load(char* filename)
 		str = "";
 	}
 
-	cout << "size: " << vertexPoints.size() << endl;
+	//cout << "vertices object: " << vertexPoints.size() << endl;
 	return S_OK;
 }
 
@@ -179,7 +179,8 @@ void ObjLoader::ParseFace3(std::ifstream& f)
 		if ( v[2] >= 0 )
 			vn = mNormals[v[2]];
 
-		vertexPoints.push_back(VertexPoint(vp,vt,vn));
+		//vertexPoints.push_back(VertexPoint(vp,vt,vn));
+		mCurrentGroup->mVertices.push_back(VertexPoint(vp,vt,vn));
 		count++;
 	}
 
@@ -208,9 +209,13 @@ void ObjLoader::ParseFace3(std::ifstream& f)
 		if ( v[2] >= 0 )
 			vn = mNormals[v[2]];
 
-		vertexPoints.push_back(vertexPoints[vertexPoints.size()-3]);
-		vertexPoints.push_back(vertexPoints[vertexPoints.size()-2]);
-		vertexPoints.push_back(VertexPoint(vp,vt,vn));
+		//vertexPoints.push_back(vertexPoints[vertexPoints.size()-3]);
+		//vertexPoints.push_back(vertexPoints[vertexPoints.size()-2]);
+		//vertexPoints.push_back(VertexPoint(vp,vt,vn));
+
+		mCurrentGroup->mVertices.push_back(mCurrentGroup->mVertices[mCurrentGroup->mVertices.size()-3]);
+		mCurrentGroup->mVertices.push_back(mCurrentGroup->mVertices[mCurrentGroup->mVertices.size()-2]);
+		mCurrentGroup->mVertices.push_back(VertexPoint(vp,vt,vn));
 	}
 }
 
@@ -272,11 +277,6 @@ void ObjLoader::ParseGroup(std::ifstream& f)
 	}
 
 	mMaterialReadAfterGroup = false;
-}
-
-vector<VertexPoint> ObjLoader::GetVertexPoints()
-{
-	return vertexPoints;
 }
 
 void ObjLoader::ltrim(std::string& str, const std::locale& loc)
@@ -404,3 +404,28 @@ HRESULT ObjLoader::ParseMaterialFile(std::ifstream& f, std::string fileDir)
 
 	return S_OK;
 }
+
+ObjGroupData* ObjLoader::GetGroup(uint index)
+{
+	if(index > mGroups.size() - 1)
+		return NULL;
+
+	MAP_GROUPS::iterator mIter = mGroups.begin();
+
+	while(index-- > 0)
+		mIter++;
+
+	return mIter->second;
+}
+
+ObjMaterialData* ObjLoader::GetMaterial(string name)
+{
+	MAP_MATERIAL::const_iterator mIter = mMaterials.find(name);
+
+	//check if material is already there
+	if(mIter == mMaterials.end())
+		return NULL;
+	else
+		return mIter->second;
+}
+

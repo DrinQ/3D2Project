@@ -77,7 +77,10 @@ void shadeWithShadow()
 	//vec4 texColor = texture( Tex1, TexCoord );
 
     // If the fragment is in shadow, use ambient light only.  
-	FragColor = vec4(diffAndSpec * shadow + ambient, 1.0) * texColor; 
+	if(texColor != vec4(0.0))
+		FragColor = vec4(diffAndSpec * shadow + ambient, 1.0) * texColor; 
+	else
+		FragColor = vec4(diffAndSpec * shadow + ambient, 1.0);
 }
 
 subroutine (RenderPassType) 

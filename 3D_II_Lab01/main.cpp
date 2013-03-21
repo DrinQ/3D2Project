@@ -122,41 +122,6 @@ void Initialize()
 		printf("ERROR starting GLEW: %s\n", glewGetErrorString(err));
 	}
 }
-//
-//void CreateShaderPrograms()
-//{
-//	shaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
-//	billboardShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
-//}
-
-//void CreateLights()
-//{
-//	mPointLight = Light(vec3(0.0f, 85.0f, 15.0f), vec3(1.0f, 1.0f, 1.0f), vec3(0.9f, 0.9f, 0.9f), 500.0f, 0.2f);
-//	mPointLight.CreatemPointLight();
-//	mPointLight.LoadTexture("../Textures/mPointLight01.png", "png");
-//}
-//
-//void CreateObjects()
-//{
-//	groundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
-//	groundQuad.CreateQuad();
-//	groundQuad.LoadTexture("../Textures/groundStone.jpg", "JPG");
-//
-//	bthObject = Object3D(vec3(70, 30, 0), 0.5f, vec3(0.0));
-//	bthObject.CreateObjFromFile("../Objects/bth.obj");
-//	bthObject.LoadTexture("../Textures/bthcolor.dds", "DDS");
-//
-//	mHouse = Object3D(vec3(-30, 0, -45), 0.08f, vec3(0.0, 25.0, 0.0));
-//	mHouse.CreateObjFromFile("../Objects/house_obj.obj");
-//	mHouse.LoadTexture("../Textures/house_diffuse.tga", "TGA");
-//	
-//	for(int i = 0; i < 5; i++)
-//	{
-//		mTreeList.push_back(Object3D(vec3(20-i*20, 0, 50+i*i), (rand() % 140 + 100)*0.01f, vec3(0.0)));
-//	}
-//	mTreeList[0].CreateObjFromFile("../Objects/gran.obj");
-//	mTreeList[0].LoadTexture("../Textures/gran.png", "PNG");
-//}
 
 int main(int argc, char** argv){
 
