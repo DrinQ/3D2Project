@@ -229,7 +229,7 @@ void Object3D::CreateObjFromFile(char* filename)
 		glBindVertexArray(0); // disable VAO
 		glUseProgram(0); // disable shader programme
 
-		mMeshList.push_back(new MeshPart(mVAOHandle, mTexHandle, mBumpHandle, mSpecHandle, vertices.size(), material));
+		mMeshList->push_back(new MeshPart(mVAOHandle, mTexHandle, vertices.size(), MaterialInfo(vec3(1.0), vec3(0.8), vec3(0.7), 3.0)));
 	}
 }
 

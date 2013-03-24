@@ -4,11 +4,6 @@
 //#include "ShaderHandler.h"
 #include "Scene.h"
 
-//#include "Camera.h"
-//#include "Object3D.h"
-//#include "Light.h"
-//#include "ShadowMap.h"
-
 int windowWidth = 1280;
 int windowHeight = 720;
 int frameCount = 0;

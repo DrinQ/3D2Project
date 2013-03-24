@@ -37,12 +37,16 @@ void Scene::CreateObjects()
 	mHouse = Object3D(vec3(-30, 0, -45), 0.08f, vec3(0.0, 25.0, 0.0));
 	mHouse.CreateObjFromFile("../Objects/OldHouse/house_obj.obj");
 	
-	/*for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 7; i++)
 	{
-		mTreeList.push_back(Object3D(vec3(20-i*20, 0, 50+i*i), (rand() % 140 + 100)*0.01f, vec3(0.0)));
+		mTreeList.push_back(Object3D(vec3(10-i*20, 0, 60+i*i), (rand() % 140 + 100)*0.01f, vec3(0.0)));
 	}
 	mTreeList[0].CreateObjFromFile("../Objects/Gran/gran.obj");
-	mTreeList[0].LoadTexture("../Objects/Gran/gran.png", "PNG");*/
+	for(int i = 1; i < mTreeList.size(); i++)
+	{
+		mTreeList[i].SetMeshList(mTreeList[0].GetMeshList());
+	}
+	//mTreeList[0].LoadTexture("../Objects/Gran/gran.png", "PNG");
 }
 
 void Scene::CreateLights()
@@ -210,11 +214,11 @@ void Scene::RenderShadowingObjects()
 	mHouse.Render(shaderProgHandle);
 
 	//glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
-	//for(UINT i = 0; i < mTreeList.size(); i++)
-	//{
-	//	SetShadowMatrices(mTreeList[i].GetModelMatrix());
-	//	//glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
-	//}
+	for(UINT i = 0; i < mTreeList.size(); i++)
+	{
+		SetShadowMatrices(mTreeList[i].GetModelMatrix());
+		mTreeList[i].Render(shaderProgHandle);
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//-------------
@@ -252,11 +256,12 @@ void Scene::RenderObjects()
 
 	////glBindTexture(GL_TEXTURE_2D, mTreeList[0].mTextureHandle);
 	//glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
-	//for(UINT i = 0; i < mTreeList.size(); i++)
-	//{
-	//	SetValues(mTreeList[i].GetModelMatrix());
-	//	//glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
-	//}
+	for(UINT i = 0; i < mTreeList.size(); i++)
+	{
+		SetValues(mTreeList[i].GetModelMatrix());
+		mTreeList[i].Render(shaderProgHandle);
+		//glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
+	}
 
 }
 

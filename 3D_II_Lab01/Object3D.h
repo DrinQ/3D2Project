@@ -8,7 +8,7 @@
 class Object3D
 {
 private:
-	vector<MeshPart*> mMeshList;
+	vector<MeshPart*>* mMeshList;
 	float mScale;
 	vec3 mRotationAngles;
 	glm::mat4 mModelMatrix;
@@ -28,9 +28,11 @@ public:
 	glm::mat4 GetModelMatrix();
 	void Update();
 	vector<MeshPart*>* GetMeshList()
-	{ return &mMeshList; }
+	{ return mMeshList; }
 	
 	void Render(uint shaderProg);
+	void SetMeshList(vector<MeshPart*>* meshList)
+	{ mMeshList = meshList; }
 };
 
 #endif
