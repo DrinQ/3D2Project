@@ -199,7 +199,7 @@ void Object3D::CreateObjFromFile(char* filename)
 		glBindVertexArray(0); // disable VAO
 		glUseProgram(0); // disable shader programme
 
-		mMeshList.push_back(new MeshPart(mVAOHandle, mTexHandle, vertices.size(), MaterialInfo(vec3(1.0), vec3(0.8), vec3(0.7), 3.0)));
+		mMeshList->push_back(new MeshPart(mVAOHandle, mTexHandle, vertices.size(), MaterialInfo(vec3(1.0), vec3(0.8), vec3(0.7), 3.0)));
 	}
 }
 
@@ -232,7 +232,7 @@ void Object3D::Update()
 
 void Object3D::Render(uint shaderProg)
 {
-	for(uint i = 0; i < mMeshList.size(); i++)
+	for(uint i = 0; i < mMeshList->size(); i++)
 	{
 		mShader->UpdateUniform("Material.Ka", shaderProg, mMeshList[i]->GetMaterialInfo().Ka);
 		mShader->UpdateUniform("Material.Kd", shaderProg, mMeshList[i]->GetMaterialInfo().Kd);
