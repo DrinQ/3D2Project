@@ -4,26 +4,7 @@
 #include "WorldData.h"
 #include "MeshMaterialData.h"
 
-/*struct MaterialInfo
-{
-	vec3 Ka;			// Ambient reflectivity
-	vec3 Kd;		    // Diffuse reflectivity
-	vec3 Ks;			// Specular reflectivity
-	float Shininess;	// Specular shininess factor
-	GLuint map_Kd;
-	GLuint map_Ks;
-	GLuint bump;
 
-	MaterialInfo(){}
-	MaterialInfo(vec3 ambRef, vec3 diffRef, vec3 specRef, float s)
-	{
-		Ka = ambRef;
-		Kd = diffRef;
-		Ks = specRef;
-		Shininess = s;
-
-	}
-};*/
 
 class MeshPart
 {

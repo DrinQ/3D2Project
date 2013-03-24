@@ -31,11 +31,11 @@ void Scene::CreateObjects()
 	mGroundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
 	mGroundQuad.CreateQuad("../Textures/groundStone.jpg", "JPG");
 
-	mBthObject = Object3D(vec3(70, 30, 0), 0.4f, vec3(0.0));
+	mBthObject = Object3D(vec3(70, 0, 0), 0.4f, vec3(0.0));
 	mBthObject.CreateObjFromFile("../Objects/PepsiCan/Pepsi_Max_Can.obj");
 
-	mHouse = Object3D(vec3(-30, 0, -45), 0.08f, vec3(0.0, 25.0, 0.0));
-	mHouse.CreateObjFromFile("../Objects/OldHouse/house_obj.obj");
+	mHouse = Object3D(vec3(-30, 0, -45), 0.9f, vec3(0.0, 125.0, 0.0));
+	mHouse.CreateObjFromFile("../Objects/TestHouse/houseA_obj.obj");
 	
 	for(int i = 0; i < 7; i++)
 	{
@@ -67,8 +67,8 @@ void Scene::SetStaticUniforms()
 		glUniform1i(loc, 1);
 	loc = glGetUniformLocation(shaderProgHandle, "BumpMap");
 		glUniform1i(loc, 2);
-	loc = glGetUniformLocation(shaderProgHandle, "SpecMap");
-		glUniform1i(loc, 3);
+	/*loc = glGetUniformLocation(shaderProgHandle, "SpecMap");
+		glUniform1i(loc, 3);*/
 
 	//Light properties
 	float maxDist = mPointLight.GetDistance();
@@ -231,8 +231,9 @@ void Scene::RenderShadowingObjects()
 
 void Scene::RenderObjects()
 {
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, mShadowMap.GetDepthTexHandle()); 
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 	glCullFace(GL_BACK);
 
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgHandle, "ProjectionMatrix"), 1, GL_FALSE, &mCameraProjectionMat[0][0]);

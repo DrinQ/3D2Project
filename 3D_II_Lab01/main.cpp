@@ -137,6 +137,7 @@ int main(int argc, char** argv){
 	
 	mScene->SetStaticUniforms();
 	
+	glutPassiveMotionFunc(My_mouse_routine); //gets the mousePointers x,y coordinates in glut window
 	//glutFullScreen();
 	int oldTimeSinceStart = 0;
 	int timeCounter = 0;
@@ -150,7 +151,7 @@ int main(int argc, char** argv){
 		if(timeCounter > 16)
 		{
 			timeCounter = 0;
-			glutPassiveMotionFunc(My_mouse_routine); //gets the mousePointers x,y coordinates in glut window
+			
 			glutMainLoopEvent();
 			
 			mScene->GetCam()->UpdateMatrices();

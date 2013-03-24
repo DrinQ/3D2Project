@@ -266,8 +266,6 @@ void Object3D::Update()
 
 void Object3D::Render(uint shaderProg)
 {
-	bool hasBump;
-	bool hasSpec;
 	for(uint i = 0; i < mMeshList->size(); i++)
 	{
 		mShader->UpdateUniform("Material.Ka", shaderProg, (*mMeshList)[i]->GetMaterialInfo()->Ka);
@@ -291,19 +289,19 @@ void Object3D::Render(uint shaderProg)
 
 		}
 
-		//Check if there's a specular map
-		if((*mMeshList)[i]->GetMaterialInfo()->map_Ks != "none")
-		{
+		////Check if there's a specular map
+		//if((*mMeshList)[i]->GetMaterialInfo()->map_Ks != "none")
+		//{
 
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mSpecMapHandle);
-		}
-		else
-		{
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, 0);
+		//	glActiveTexture(GL_TEXTURE3);
+		//	glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mSpecMapHandle);
+		//}
+		//else
+		//{
+		//	glActiveTexture(GL_TEXTURE3);
+		//	glBindTexture(GL_TEXTURE_2D, 0);
 
-		}
+		//}
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mTextureHandle);
