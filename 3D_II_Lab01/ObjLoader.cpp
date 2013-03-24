@@ -307,7 +307,7 @@ void ObjLoader::btrim(std::string& str, const std::locale& loc)
 
 HRESULT ObjLoader::ParseMaterialFile(std::ifstream& f, std::string fileDir)
 {
-	ObjMaterialData* md = NULL;
+	MeshMaterialData* md = NULL;
 	std::string str;
 
 	//get material filename
@@ -342,6 +342,11 @@ HRESULT ObjLoader::ParseMaterialFile(std::ifstream& f, std::string fileDir)
 			for(UINT32 i = 0; i < 3; ++i)
 				mf >> md->Ka[i];
 		}
+		else if(str == "Ks")
+		{
+			for(UINT32 i = 0; i < 3; ++i)
+				mf >> md->Ks[i];
+		}
 		else if(str == "Tf")
 		{
 			for(UINT32 i = 0; i < 3; ++i)
@@ -354,12 +359,19 @@ HRESULT ObjLoader::ParseMaterialFile(std::ifstream& f, std::string fileDir)
 
 			md->map_Kd = fileDir + str;
 		}
+		else if(str == "map_Ks")
+		{
+			getline(mf, str);
+			btrim(str);
+
+			md->map_Ks = fileDir + str;
+		}
 		else if(str == "bump")
 		{
 			getline(mf, str);
 			btrim(str);
 			//cut last crap :-)
-			md->bump = fileDir + str.substr(0, str.find(" -bm 1"));
+			md->bump = fileDir + str;
 		}
 		else if(str == "disp")
 		{
@@ -379,6 +391,10 @@ HRESULT ObjLoader::ParseMaterialFile(std::ifstream& f, std::string fileDir)
 		{
 			mf >> md->Ni;
 		}
+		else if(str == "Ns")
+		{
+			mf >> md->Ns;
+		}
 		else if(str == "newmtl")
 		{
 			//mf >> str;
@@ -391,7 +407,7 @@ HRESULT ObjLoader::ParseMaterialFile(std::ifstream& f, std::string fileDir)
 			//check if material is already there
 			if(mIter == mMaterials.end())
 			{
-				md = new ObjMaterialData;
+				md = new MeshMaterialData;
 				md->Name = str;
 				mMaterials[str] = md;
 			}
@@ -418,7 +434,7 @@ ObjGroupData* ObjLoader::GetGroup(uint index)
 	return mIter->second;
 }
 
-ObjMaterialData* ObjLoader::GetMaterial(string name)
+MeshMaterialData* ObjLoader::GetMaterial(string name)
 {
 	MAP_MATERIAL::const_iterator mIter = mMaterials.find(name);
 

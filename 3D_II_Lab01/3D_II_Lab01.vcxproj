@@ -92,6 +92,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="MeshPart.h" />
+    <ClInclude Include="MeshMaterialData.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="Light.h" />

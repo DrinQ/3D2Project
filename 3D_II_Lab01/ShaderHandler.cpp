@@ -194,3 +194,16 @@ int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, ma
 
 	return 0;
 }
+
+
+int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, bool value)
+{
+	glUseProgram(shaderProgHandle);
+	//use same name for value in shader 
+	uint location = glGetUniformLocation(shaderProgHandle, variable);
+	if( location >= 0 )
+		{ glUniform1f(location, value); }
+	else return 1;
+
+	return 0;
+}

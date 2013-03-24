@@ -35,8 +35,8 @@ public:
 
 	void LoadTexture(char* file, char* format)
 {
-	if(format == "TGA") mTextureHandle = TextureLoader::LoadTexture_tga(file);
-	else mTextureHandle = TextureLoader::LoadTexture(file);
+	if(format == "TGA") mTextureHandle = TextureLoader::LoadTexture_tga(file, GL_TEXTURE0);
+	else mTextureHandle = TextureLoader::LoadTexture(file, GL_TEXTURE0);
 }
 };
 #endif

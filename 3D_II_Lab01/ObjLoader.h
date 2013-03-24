@@ -2,31 +2,11 @@
 #define _OBJLOADER_H_
 #include "includes.h"
 #include "WorldData.h"
+#include "MeshMaterialData.h"
 #include <map>
 using glm::vec2;
 
-struct ObjMaterialData
-{
-	std::string Name;
-	UINT32	Illum;
-	float Kd[3];
-	float Ka[3];
-	float Tf[3];
-	string	map_Kd;
-	string bump;
-	string disp;
-	string occlusion;
-	float Ni;
 
-	ObjMaterialData()
-	{
-		Name = "none";
-		map_Kd = "none";
-		//bump = "none";
-		//disp = "none";
-		//occlusion = "none";
-	}
-};
 
 struct ObjGroupData
 {
@@ -40,7 +20,7 @@ struct ObjGroupData
 	vector<VertexPoint> mVertices;
 };
 
-typedef std::map<std::string, ObjMaterialData*> MAP_MATERIAL;
+typedef std::map<std::string, MeshMaterialData*> MAP_MATERIAL;
 typedef std::map<std::string, ObjGroupData*> MAP_GROUPS;
 
 class ObjLoader
@@ -86,7 +66,7 @@ public:
 	HRESULT Load(char* filename);
 
 	ObjGroupData* GetGroup(uint index);
-	ObjMaterialData* GetMaterial(string name);
+	MeshMaterialData* GetMaterial(string name);
 
 	int GetGroupCount()
 	{ return mGroups.size(); }

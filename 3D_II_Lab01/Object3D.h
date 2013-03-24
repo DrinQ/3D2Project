@@ -22,7 +22,7 @@ public:
 	Object3D(vec3 pos, float scale, vec3 rot);
 	~Object3D();
 
-	uint LoadTexture(char* file, char* format);
+	uint LoadTexture(char* file, char* format, GLenum textureSlot);
 	void CreateQuad(char* texFile, char* fileFormat);
 	void CreateObjFromFile(char* filename);
 	glm::mat4 GetModelMatrix();

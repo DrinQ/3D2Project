@@ -61,6 +61,10 @@ void Scene::SetStaticUniforms()
 		glUniform1i(loc, 0);
 	loc = glGetUniformLocation(shaderProgHandle, "ShadowMap");
 		glUniform1i(loc, 1);
+	loc = glGetUniformLocation(shaderProgHandle, "BumpMap");
+		glUniform1i(loc, 2);
+	loc = glGetUniformLocation(shaderProgHandle, "SpecMap");
+		glUniform1i(loc, 3);
 
 	//Light properties
 	float maxDist = mPointLight.GetDistance();
@@ -265,7 +269,7 @@ void Scene::RenderLightSources()
 	SetLightValues();
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mPointLight.mTextureHandle);
 	glBindVertexArray(mPointLight.mVAOHandle); // bind VAO
 	glDrawArrays( GL_POINTS, 0, 1);

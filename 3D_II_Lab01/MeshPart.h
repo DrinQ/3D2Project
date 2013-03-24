@@ -2,13 +2,17 @@
 #define MESHPART_H_
 #include "includes.h"
 #include "WorldData.h"
+#include "MeshMaterialData.h"
 
-struct MaterialInfo
+/*struct MaterialInfo
 {
 	vec3 Ka;			// Ambient reflectivity
 	vec3 Kd;		    // Diffuse reflectivity
 	vec3 Ks;			// Specular reflectivity
 	float Shininess;	// Specular shininess factor
+	GLuint map_Kd;
+	GLuint map_Ks;
+	GLuint bump;
 
 	MaterialInfo(){}
 	MaterialInfo(vec3 ambRef, vec3 diffRef, vec3 specRef, float s)
@@ -17,21 +21,24 @@ struct MaterialInfo
 		Kd = diffRef;
 		Ks = specRef;
 		Shininess = s;
+
 	}
-};
+};*/
 
 class MeshPart
 {
 private:
 	//vector<VertexPoint> mVertices;
 	int mVertexCount;
-	MaterialInfo mMaterial;
+	MeshMaterialData* mMaterial;
 
 public:
 	GLuint mVAOHandle;
 	GLuint mTextureHandle;
+	GLuint mBumpMapHandle;
+	GLuint mSpecMapHandle;
 
-	MeshPart(GLuint VAOHandle, GLuint texHandle, int vertexCount, MaterialInfo material);
+	MeshPart(GLuint VAOHandle, GLuint texHandle, GLuint bumpHandle, GLuint specHandle, int vertexCount, MeshMaterialData* material);
 	~MeshPart(void);
 
 	/*void SetVertexPoints(vector<VertexPoint>* vertices)
@@ -39,7 +46,7 @@ public:
 	int GetVertexCount()
 	{ return mVertexCount; }
 
-	MaterialInfo GetMaterialInfo()
+	MeshMaterialData* GetMaterialInfo()
 	{ return mMaterial; }
 };
 

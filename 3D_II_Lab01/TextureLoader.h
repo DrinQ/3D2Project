@@ -7,7 +7,7 @@
 static class TextureLoader{
 
 public:
-static unsigned int LoadTexture_tga(char* fn) {
+static unsigned int LoadTexture_tga(char* fn, GLenum textureSlot) {
 	const size_t size_uchar = sizeof(uchar);
 	const size_t size_sint = sizeof(sint);
 
@@ -51,7 +51,7 @@ static unsigned int LoadTexture_tga(char* fn) {
 
 	GLuint texHandle;
 	// Copy file to OpenGL
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(textureSlot);
 	glGenTextures(1, &texHandle);
 	glBindTexture(GL_TEXTURE_2D, texHandle);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -69,7 +69,7 @@ static unsigned int LoadTexture_tga(char* fn) {
 		
 }
 
-static unsigned int LoadTexture(char* file)
+static unsigned int LoadTexture(char* file, GLenum textureSlot)
 {
 	int width, height, channels;
 		// Load texture file and convert to openGL format
@@ -77,7 +77,7 @@ static unsigned int LoadTexture(char* file)
 
 	GLuint texHandle;
 	// Copy file to OpenGL
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(textureSlot);
 	glGenTextures(1, &texHandle);
 	glBindTexture(GL_TEXTURE_2D, texHandle);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
