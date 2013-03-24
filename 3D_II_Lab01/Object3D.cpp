@@ -17,6 +17,7 @@ Object3D::Object3D(vec3 pos, float scale, vec3 rot)
 	
 	mModelMatrix = mTranslation * mRotation * glm::scale(glm::mat4(1.0f), vec3(mScale));
 	//mMaterial = MaterialInfo(vec3(1.0), vec3(0.8), vec3(0.7), 3.0);
+
 }
 
 Object3D::~Object3D()
@@ -31,6 +32,7 @@ uint Object3D::LoadTexture(char* file, char* format, GLenum textureSlot)
 
 void Object3D::CreateQuad(char* texFile, char* fileFormat)
 {
+	mMeshList = new vector<MeshPart*>();
 	GLuint mVAOHandle;
 	GLuint mTexHandle = LoadTexture(texFile, fileFormat, GL_TEXTURE0);
 
@@ -112,11 +114,13 @@ void Object3D::CreateQuad(char* texFile, char* fileFormat)
 	material->Ks = vec3(0.7);
 	material->Ns = 3.0;
 
-	mMeshList.push_back(new MeshPart(mVAOHandle, mTexHandle, 0, 0, 6, material));
+	mMeshList->push_back(new MeshPart(mVAOHandle, mTexHandle, 0, 0, 6, material));
 }
 
 void Object3D::CreateObjFromFile(char* filename)
 {
+	mMeshList = new vector<MeshPart*>();
+
 	ObjLoader* objData = new ObjLoader();
 	objData->Load(filename);
 	ObjGroupData* group = NULL;
@@ -229,7 +233,7 @@ void Object3D::CreateObjFromFile(char* filename)
 		glBindVertexArray(0); // disable VAO
 		glUseProgram(0); // disable shader programme
 
-		mMeshList->push_back(new MeshPart(mVAOHandle, mTexHandle, vertices.size(), MaterialInfo(vec3(1.0), vec3(0.8), vec3(0.7), 3.0)));
+		mMeshList->push_back(new MeshPart(mVAOHandle, mTexHandle, mBumpHandle, mSpecHandle, vertices.size(), material));
 	}
 }
 
@@ -264,21 +268,21 @@ void Object3D::Render(uint shaderProg)
 {
 	bool hasBump;
 	bool hasSpec;
-	for(uint i = 0; i < mMeshList.size(); i++)
+	for(uint i = 0; i < mMeshList->size(); i++)
 	{
-		mShader->UpdateUniform("Material.Ka", shaderProg, mMeshList[i]->GetMaterialInfo()->Ka);
-		mShader->UpdateUniform("Material.Kd", shaderProg, mMeshList[i]->GetMaterialInfo()->Kd);
-		mShader->UpdateUniform("Material.Ks", shaderProg, mMeshList[i]->GetMaterialInfo()->Ks);
-		mShader->UpdateUniform("Material.Shininess", shaderProg, mMeshList[i]->GetMaterialInfo()->Ns);
+		mShader->UpdateUniform("Material.Ka", shaderProg, (*mMeshList)[i]->GetMaterialInfo()->Ka);
+		mShader->UpdateUniform("Material.Kd", shaderProg, (*mMeshList)[i]->GetMaterialInfo()->Kd);
+		mShader->UpdateUniform("Material.Ks", shaderProg, (*mMeshList)[i]->GetMaterialInfo()->Ks);
+		mShader->UpdateUniform("Material.Shininess", shaderProg, (*mMeshList)[i]->GetMaterialInfo()->Ns);
 
 
 
 		//Check if there's a bump map
-		if(mMeshList[i]->GetMaterialInfo()->bump != "none")
+		if((*mMeshList)[i]->GetMaterialInfo()->bump != "none")
 		{
 
 			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, mMeshList[i]->mBumpMapHandle);
+			glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mBumpMapHandle);
 		}
 		else
 		{
@@ -288,11 +292,11 @@ void Object3D::Render(uint shaderProg)
 		}
 
 		//Check if there's a specular map
-		if(mMeshList[i]->GetMaterialInfo()->map_Ks != "none")
+		if((*mMeshList)[i]->GetMaterialInfo()->map_Ks != "none")
 		{
 
 			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, mMeshList[i]->mSpecMapHandle);
+			glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mSpecMapHandle);
 		}
 		else
 		{
@@ -302,9 +306,9 @@ void Object3D::Render(uint shaderProg)
 		}
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, mMeshList[i]->mTextureHandle);
+		glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mTextureHandle);
 
-		glBindVertexArray(mMeshList[i]->mVAOHandle);
-		glDrawArrays(GL_TRIANGLES, 0, mMeshList[i]->GetVertexCount());
+		glBindVertexArray((*mMeshList)[i]->mVAOHandle);
+		glDrawArrays(GL_TRIANGLES, 0, (*mMeshList)[i]->GetVertexCount());
 	}
 }
