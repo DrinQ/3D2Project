@@ -88,6 +88,7 @@
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="ShaderHandler.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -101,6 +102,7 @@
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="ShaderHandler.h" />
     <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="WorldData.h" />
   </ItemGroup>

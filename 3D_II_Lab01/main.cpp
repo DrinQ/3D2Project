@@ -1,14 +1,12 @@
 #include "includes.h"
 #include <time.h>
-//#include "TextureLoader.h"
-//#include "ShaderHandler.h"
 #include "Scene.h"
 
 int windowWidth = 1280;
 int windowHeight = 720;
 int frameCount = 0;
 char windowTitle[128] = "Project 3DII";
-int shadowMapRes = 4096; 
+int shadowMapRes = 4096*0.75; 
 
 Scene* mScene;
 

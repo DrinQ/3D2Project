@@ -9,6 +9,8 @@ Scene::Scene(int windowWidth, int windowHeight)
 
 	mSkyBox = SkyBox("../Textures/CubeMaps/skybox", windowWidth, windowHeight);
 	mSkyBox.BindBuffers();
+
+	mTerrain = Terrain(257, 257, "../Textures/heightMap.raw", 50.0f, 1.0f, 1.0f, "../Textures/terrain.jpg");
 }
 
 void Scene::CreateShadowMap(int res)
@@ -207,6 +209,9 @@ void Scene::RenderShadowingObjects()
 	SetShadowMatrices(mGroundQuad.GetModelMatrix());
 	mGroundQuad.Render(shaderProgHandle);
 
+	/*SetShadowMatrices(mTerrain.GetModelMatrix());
+	mTerrain.Render(shaderProgHandle);*/
+
 	SetShadowMatrices(mBthObject.GetModelMatrix());
 	mBthObject.Render(shaderProgHandle);
 
@@ -249,6 +254,8 @@ void Scene::RenderObjects()
 	tileSize = 1.0;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
 
+	
+
 	SetValues(mBthObject.GetModelMatrix());
 	mBthObject.Render(shaderProgHandle);
 
@@ -263,7 +270,8 @@ void Scene::RenderObjects()
 		mTreeList[i].Render(shaderProgHandle);
 		//glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
 	}
-
+	SetValues(mTerrain.GetModelMatrix());
+	mTerrain.Render(shaderProgHandle);
 }
 
 void Scene::RenderLightSources()

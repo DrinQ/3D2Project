@@ -9,10 +9,15 @@ struct VertexPoint
 	vec2 texCoord;
 	vec3 normal;
 	
+	VertexPoint()
+	{
+	}
+
 	VertexPoint(vec3 pos, vec2 tCoord, vec3 norm)
 	{
 		position = pos;
-		texCoord = tCoord;
+		texCoord.x = tCoord.x;
+		texCoord.y = -tCoord.y;
 		normal = norm;
 	}
 

@@ -7,6 +7,7 @@
 #include "ShaderHandler.h"
 #include "Camera.h"
 #include "SkyBox.h"
+#include "Terrain.h"
 
 class Scene
 {
@@ -15,6 +16,7 @@ private:
 	Object3D mGroundQuad;
 	Object3D mHouse;
 	vector<Object3D> mTreeList;
+	Terrain mTerrain;
 
 	Light mPointLight;
 
