@@ -9,7 +9,7 @@ class Terrain
 {
 private:
 	int mWidth, mHeight;
-	float mSizeScale;
+	//float mSizeScale;
 	vector<float> mHeightMap;
 	uint* mIndices;
 	ShaderHandler* mShader;
@@ -22,7 +22,6 @@ private:
 
 public:
 	
-
 	Terrain(int w, int h, const string &hMapFile, float yScale, float yOffset, float xzScale, char* texFile);
 	Terrain();
 	~Terrain();
@@ -31,7 +30,7 @@ public:
 	void CreateGrid(int width, int height, float scale);
 	void Render(uint shaderProg);
 	mat4 GetModelMatrix()
-	{ return mat4(1.0f); }
+	{ return mat4(1.0f) * glm::translate(vec3(150.0f, -100.0f, -100.0f)); }
 };
 
 #endif

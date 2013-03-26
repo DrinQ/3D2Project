@@ -10,7 +10,7 @@ Scene::Scene(int windowWidth, int windowHeight)
 	mSkyBox = SkyBox("../Textures/CubeMaps/skybox", windowWidth, windowHeight);
 	mSkyBox.BindBuffers();
 
-	mTerrain = Terrain(257, 257, "../Textures/heightMap.raw", 50.0f, 1.0f, 1.0f, "../Textures/terrain.jpg");
+	
 }
 
 void Scene::CreateShadowMap(int res)
@@ -30,25 +30,27 @@ Scene::~Scene()
 
 void Scene::CreateObjects()
 {
+	mTerrain = new Terrain(257, 257, "../Textures/heightMap.raw", 150.0f, 0.0f, 3.0f, "../Textures/terrain.jpg");
+
 	mGroundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
 	mGroundQuad.CreateQuad("../Textures/groundStone.jpg", "JPG");
 
-	mBthObject = Object3D(vec3(70, 0, 0), 0.4f, vec3(0.0));
+	mBthObject = Object3D(vec3(70, 0, 0), 0.5f, vec3(0.0));
 	mBthObject.CreateObjFromFile("../Objects/PepsiCan/Pepsi_Max_Can.obj");
 
 	mHouse = Object3D(vec3(-30, 0, -45), 0.9f, vec3(0.0, 125.0, 0.0));
 	mHouse.CreateObjFromFile("../Objects/TestHouse/houseA_obj.obj");
 	
-	for(int i = 0; i < 7; i++)
+	for(int i = 0; i < 3; i++)
 	{
-		mTreeList.push_back(Object3D(vec3(10-i*20, 0, 60+i*i), (rand() % 140 + 100)*0.01f, vec3(0.0)));
+		for(int j = 0; j < 3; j++)
+			mTreeList.push_back(new Object3D(vec3(10-i*25, 0, 60+i*2 + j*32), (rand() % 140 + 100)*0.01f, vec3(0.0)));
 	}
-	mTreeList[0].CreateObjFromFile("../Objects/Gran/gran.obj");
+	mTreeList[0]->CreateObjFromFile("../Objects/Gran/gran.obj");
 	for(int i = 1; i < mTreeList.size(); i++)
 	{
-		mTreeList[i].SetMeshList(mTreeList[0].GetMeshList());
+		mTreeList[i]->SetMeshList(mTreeList[0]->GetMeshList());
 	}
-	//mTreeList[0].LoadTexture("../Objects/Gran/gran.png", "PNG");
 }
 
 void Scene::CreateLights()
@@ -73,17 +75,15 @@ void Scene::SetStaticUniforms()
 		glUniform1i(loc, 3);*/
 
 	//Light properties
-	float maxDist = mPointLight.GetDistance();
+	
 	vec4 LightPosition = vec4(mPointLight.GetWorldPos(), 1.0f);	// Light position
 	vec3 La = vec3(0.3f, 0.3f, 0.3f);			// Ambient light intensity
 	vec3 Ld = mPointLight.GetDiffuse();			// Diffuse light intensity
 	vec3 Ls = mPointLight.GetSpecular();			// Specular light intensity
 
 	//------
-	GLuint location = glGetUniformLocation(shaderProgHandle, "maxDist");	//gets the UniformLocation 
-	glUniform1fv(location, 1, &maxDist);
-
-	location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
+	
+	GLuint location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
 	glUniform4fv(location, 1, &LightPosition[0]);
 
 	location = glGetUniformLocation(shaderProgHandle, "Light.La");	//gets the UniformLocation
@@ -125,9 +125,14 @@ void Scene::SetValues(mat4 model)
 	mat3 normalMatrix = glm::transpose(glm::inverse(mat3(ModelView)));
 
 	vec4 lightPos = vec4(mPointLight.GetWorldPos(), 1.0f);
+	float maxDist = mPointLight.GetDistance();
 
 	//Update uniforms
-	GLuint location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
+
+	GLuint location = glGetUniformLocation(shaderProgHandle, "maxDist");	//gets the UniformLocation 
+	glUniform1fv(location, 1, &maxDist);
+
+	location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
 	glUniform4fv(location, 1, &lightPos[0]);
 
 	location = glGetUniformLocation(shaderProgHandle, "ShadowMatrix");	//gets the UniformLocation from shader.vertex
@@ -194,7 +199,6 @@ void Scene::RenderShadowingObjects()
 {
 	recordDepthIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "recordDepth");
 
-	glViewport(0, 0, mShadowMapRes, mShadowMapRes);
 	glUseProgram(shaderProgHandle);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, mShadowMap.GetShadowFBOHandle());
@@ -206,11 +210,10 @@ void Scene::RenderShadowingObjects()
 	glCullFace(GL_FRONT);
 
 	//----Render-----------
-	SetShadowMatrices(mGroundQuad.GetModelMatrix());
-	mGroundQuad.Render(shaderProgHandle);
+	
 
-	/*SetShadowMatrices(mTerrain.GetModelMatrix());
-	mTerrain.Render(shaderProgHandle);*/
+	SetShadowMatrices(mTerrain->GetModelMatrix());
+	mTerrain->Render(shaderProgHandle);
 
 	SetShadowMatrices(mBthObject.GetModelMatrix());
 	mBthObject.Render(shaderProgHandle);
@@ -218,12 +221,15 @@ void Scene::RenderShadowingObjects()
 	SetShadowMatrices(mHouse.GetModelMatrix());
 	mHouse.Render(shaderProgHandle);
 
-	//glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
 	for(UINT i = 0; i < mTreeList.size(); i++)
 	{
-		SetShadowMatrices(mTreeList[i].GetModelMatrix());
-		mTreeList[i].Render(shaderProgHandle);
+		SetShadowMatrices(mTreeList[i]->GetModelMatrix());
+		mTreeList[i]->Render(shaderProgHandle);
 	}
+
+	SetShadowMatrices(mGroundQuad.GetModelMatrix());
+	mGroundQuad.Render(shaderProgHandle);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//-------------
@@ -245,16 +251,11 @@ void Scene::RenderObjects()
 
 	
 	//-------Render------
-	float tileSize = 0.15f;
+	float tileSize = 1.0;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
 
-	SetValues(mGroundQuad.GetModelMatrix());
-	mGroundQuad.Render(shaderProgHandle);
-
-	tileSize = 1.0;
-	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
-
-	
+	SetValues(mTerrain->GetModelMatrix());
+	mTerrain->Render(shaderProgHandle);
 
 	SetValues(mBthObject.GetModelMatrix());
 	mBthObject.Render(shaderProgHandle);
@@ -262,16 +263,18 @@ void Scene::RenderObjects()
 	SetValues(mHouse.GetModelMatrix());
 	mHouse.Render(shaderProgHandle);
 
-	////glBindTexture(GL_TEXTURE_2D, mTreeList[0].mTextureHandle);
-	//glBindVertexArray(mTreeList[0].mVAOHandle); // bind VAO
 	for(UINT i = 0; i < mTreeList.size(); i++)
 	{
-		SetValues(mTreeList[i].GetModelMatrix());
-		mTreeList[i].Render(shaderProgHandle);
-		//glDrawArrays( GL_TRIANGLES, 0, mTreeList[0].GetVertexList()->size());
+		SetValues(mTreeList[i]->GetModelMatrix());
+		mTreeList[i]->Render(shaderProgHandle);
 	}
-	SetValues(mTerrain.GetModelMatrix());
-	mTerrain.Render(shaderProgHandle);
+
+	tileSize = 0.15f;
+	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
+
+	SetValues(mGroundQuad.GetModelMatrix());
+	mGroundQuad.Render(shaderProgHandle);
+
 }
 
 void Scene::RenderLightSources()

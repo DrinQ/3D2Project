@@ -22,6 +22,7 @@ void renderCallback()
 
 	mScene->RenderSkyBox();
 
+	glViewport(0, 0, shadowMapRes, shadowMapRes);
 	//---1st time---- from light perspective------------------------------------
 	//viewPort set in the function
 	mScene->RenderShadowingObjects();

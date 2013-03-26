@@ -15,8 +15,8 @@ private:
 	Object3D mBthObject;
 	Object3D mGroundQuad;
 	Object3D mHouse;
-	vector<Object3D> mTreeList;
-	Terrain mTerrain;
+	vector<Object3D*> mTreeList;
+	Terrain* mTerrain;
 
 	Light mPointLight;
 

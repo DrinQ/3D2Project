@@ -52,9 +52,26 @@ void Light::CreatePointlight()
 
 void Light::UpdateLights()
 {
-	mWorldPos.x += mSpeed;
+	/*mWorldPos.x += mSpeed;
 
 	if(mWorldPos.x < -60.0 || mWorldPos.x > 60.0) 
-		mSpeed *= -1;
+		mSpeed *= -1;*/
+	if(GetAsyncKeyState('I') != 0)
+		mWorldPos.z -= mSpeed*2;
 
+	if(GetAsyncKeyState('J') != 0)
+		mWorldPos.x -= mSpeed*2;
+
+	if(GetAsyncKeyState('L') != 0)
+		mWorldPos.x += mSpeed*2;
+
+	if(GetAsyncKeyState('K') != 0)
+		mWorldPos.z += mSpeed*2;
+	
+	if(GetAsyncKeyState(VK_LSHIFT) != 0)
+	{
+		mDistance = 0; 
+	}
+	else
+		mDistance = 500.0f;
 }

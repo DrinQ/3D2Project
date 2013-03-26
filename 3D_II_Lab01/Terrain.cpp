@@ -86,43 +86,49 @@ void Terrain::Filter3x3()
 
 void Terrain::CreateGrid(int width, int height, float scale)
 {
-	mSizeScale = scale;
-	int dataIndex = 0;
-
 	int triangleCount = (width-1)*(height-1) * 2;
 
+	mIndices = new uint[triangleCount * 3];
+	vec2* normals = new vec2[width*height];
+
+	UINT k = 0;
+    for (UINT i = 0; i < height-2; i++)
+    {
+            for (UINT j = 0; j < width-2; j++)
+            {
+                    mIndices[k]     = i * (width-1) + j;
+                    mIndices[k + 1] = (i+1) * (width-1) + j;
+                    mIndices[k + 2] = (i+1) * (width-1) + j+1;
+
+
+                    mIndices[k + 3] = i * (width-1) + j;
+                    mIndices[k + 4] = (i+1) * (width-1) + j+1;
+                    mIndices[k + 5] = i * (width-1) + j+1;
+ 
+                    k += 6;
+            }
+    }
+
 	VertexPoint* mGridValues = new VertexPoint[width*height];
+
+	int dataIndex = 0;
 
 	for(int j = 0; j<height-1; j++)
 		for(int i= 0; i <width-1; i++)
 		{
-			//gridValues[dataIndex] = VertexPoint(i*scale, mHeightMap[i + j*height], j*scale,			   0.0f, 0.6f * mHeightmap[i + j*height], 0.0f);
-			//gridValues[dataIndex].setTexCoord(0.0+(float)i/(width-1),  1.0-(float)j/(height-1));
-			//gridValues[dataIndex].setNormal(0.0, 1.0, 0.0);
 			mGridValues[dataIndex] = VertexPoint(vec3(i*scale, mHeightMap[i + j*height], j*scale), vec2((float)i/(width-1),  1.0-(float)j/(height-1)), vec3(0.0, 1.0, 0.0));
-
+			
 			dataIndex++;
 		}
 
-		mIndices = new uint[triangleCount * 3];
-
-		UINT k = 0;
-        for (UINT i = 0; i < height-2; i++)
-        {
-                for (UINT j = 0; j < width-2; j++)
-                {
-                        mIndices[k]     = i * (width-1) + j;
-                        mIndices[k + 1] = (i+1) * (width-1) + j;
-                        mIndices[k + 2] = (i+1) * (width-1) + j+1;
- 
-                        mIndices[k + 3] = i * (width-1) + j;
-                        mIndices[k + 4] = (i+1) * (width-1) + j+1;
-                        mIndices[k + 5] = i * (width-1) + j+1;
- 
-                        k += 6;
-                }
-        }
-
+	for(uint i = 0; i < (height-2)*(width-2); i++)
+	{
+		vec3 v0 = mGridValues[i].position;
+		vec3 v1 = mGridValues[i+width].position;
+		vec3 v2 = mGridValues[i+width+1].position;
+		mGridValues[i].normal = glm::cross(v1-v0,v2-v1);
+	}
+		
 	float* positionData = new float[width*height*3];
 	float* texCoordData = new float[width*height*2];
 	float* normalData = new float[width*height*3];
@@ -189,8 +195,8 @@ void Terrain::CreateGrid(int width, int height, float scale)
 
 void Terrain::Render(uint shaderProg)
 {
-	mShader->UpdateUniform("Material.Ka", shaderProg, vec3(0.5, 0.5, 0.5));
-	mShader->UpdateUniform("Material.Kd", shaderProg, vec3(0.7, 0.7, 0.7));
+	mShader->UpdateUniform("Material.Ka", shaderProg, vec3(0.3, 0.3, 0.3));
+	mShader->UpdateUniform("Material.Kd", shaderProg, vec3(0.8, 0.8, 0.8));
 	mShader->UpdateUniform("Material.Ks", shaderProg, vec3(0.2, 0.2, 0.2));
 	mShader->UpdateUniform("Material.Shininess", shaderProg, 2.0f);
 
@@ -198,5 +204,6 @@ void Terrain::Render(uint shaderProg)
 	glBindTexture(GL_TEXTURE_2D, mTexureHandle);
 
 	glBindVertexArray(mVAOHandle);
-	glDrawElements( GL_TRIANGLES, (mWidth-1)*(mHeight-1)*6, GL_UNSIGNED_INT, mIndices);
+	glDrawElements( GL_TRIANGLES, (mWidth-1)*(mHeight-1)*6, GL_UNSIGNED_INT, this->mIndices);
+	glBindVertexArray(0);
 }
