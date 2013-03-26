@@ -5,13 +5,14 @@ in vec2 TexCoord;
 in vec4 LightWPosition;
 in float lightIntensity;
 in vec4 ShadowCoord;
+in mat3 NormalMat;
+in vec3 LightDir;
+in vec3 ViewDir;
 
 uniform sampler2D Tex1;
 uniform sampler2DShadow ShadowMap;
 uniform sampler2D BumpMap;
 uniform sampler2D SpecMap;
-
-vec3 normal;
 
 uniform float TileSize;
 
@@ -33,13 +34,14 @@ struct MaterialInfo{
 };
 uniform MaterialInfo Material;
 
-vec3 phongModelDiffAndSpec() {
+vec3 phongModelDiffAndSpec(vec3 normal) {
 
-	vec3 s = normalize(vec3(LightWPosition - EyePosition));
-	vec3 v = normalize(-EyePosition.xyz);	
-	vec3 r = reflect( -s, normal );
+	 //LightDir = normalize(vec3(LightWPosition - EyePosition));
+	 //ViewDir = normalize(-EyePosition.xyz);	
 
-	float sDotN = max( dot(s, normal), 0.0 );
+	vec3 r = reflect( -LightDir, normal );
+
+	float sDotN = max( dot(LightDir, normal), 0.0 );
 	
 	//Diffuse light
 	vec3 diffuse = Light.Ld * Material.Kd * sDotN * lightIntensity;
@@ -51,11 +53,12 @@ vec3 phongModelDiffAndSpec() {
 		Ks = texture(SpecMap, TexCoord).xyz;
 	}
 
+
 	vec3 specular = vec3(0.0);
 	
 	//Specular light
 	if( sDotN > 0.0 )
-		specular = Light.Ls * Ks * pow( max( dot(r,v), 0.0 ), Material.Shininess ) * lightIntensity;
+		specular = Light.Ls * Ks * pow( max( dot(r,ViewDir), 0.0 ), Material.Shininess ) * lightIntensity;
 		
 	
 	//LightIntensity = ambient + diffuse + spec;
@@ -69,19 +72,33 @@ subroutine uniform RenderPassType RenderPass;
 subroutine (RenderPassType) 
 void shadeWithShadow() 
 {  
-	//if(texture(BumpMap, TexCoord) != vec4(0.0))
-	//{
-	//	vec4 norm = texture(BumpMap, TexCoord);
-	//	normal.x = 2 * (norm.x - 0.5);
-	//	normal.y = 2 * (norm.y - 0.5);
-//		normal.z = 2 * (norm.z - 0.5);
-//	}
-//	else
-		normal = TNormal;
+	vec2 xy = TexCoord.xy;
+	vec2 phase = fract(xy / TileSize);
+
+	vec3 normal = TNormal;
+
+	if(texture(BumpMap, TexCoord) != vec4(0.0))
+	{
+		vec3 norm = texture(BumpMap, phase).xyz;
+		
+		//norm = normalize(NormalMat * norm);
+
+		normal.x = 2 * (norm.x - 1);
+		normal.y = 2 * (norm.y - 1);
+		normal.z = 2 * (norm.z - 1);
+
+		//normal = normalize(NormalMat * normal);
+		//normal = norm.xyz;
+		//normal = TNormal;
+		//normal = norm;
+
+		normal = 2 * texture(BumpMap, phase).xyz - 1.0;
+		//normal = normalize(normal);
+	}
 
 
 	vec3 ambient = Light.La * Material.Ka;
-	vec3 diffAndSpec = phongModelDiffAndSpec();
+	vec3 diffAndSpec = phongModelDiffAndSpec(normal);
 
      // The sum of the comparisons with nearby texels  
 	 float sum = 0;
@@ -93,8 +110,7 @@ void shadeWithShadow()
 	float shadow = sum * 0.25;
 	//float shadow = textureProj(ShadowMap, ShadowCoord);
 
-	vec2 xy = TexCoord.xy;
-	vec2 phase = fract(xy / TileSize);
+	
 	vec4 texColor = texture2D(Tex1 ,phase);
 
 	//vec4 texColor = texture( Tex1, TexCoord );

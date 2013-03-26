@@ -22,7 +22,7 @@ public:
 	~Light(void);
 
 	void CreatePointlight();
-	void UpdateLights();
+	void UpdateLights(vec3 cameraPos);
 
 	vec3 GetWorldPos()
 	{ return mWorldPos; }

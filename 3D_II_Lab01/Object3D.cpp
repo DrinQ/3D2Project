@@ -174,6 +174,7 @@ void Object3D::CreateObjFromFile(char* filename)
 		float* positionData = new float[vertices.size()*3];
 		float* texCoordData = new float[vertices.size()*2];
 		float* normalData = new float[vertices.size()*3];
+		float* tangentData = new float[vertices.size()*3];
 		int count = 0;
 
 		for(int i = 0; i < vertices.size(); i++)
@@ -189,14 +190,18 @@ void Object3D::CreateObjFromFile(char* filename)
 			normalData[3*count+1] = vertices[i].normal.y;
 			normalData[3*count+2] = vertices[i].normal.z;
 
+			tangentData[3*count] = vertices[i].tangent.x;
+			tangentData[3*count+1] = vertices[i].tangent.y;
+			tangentData[3*count+2] = vertices[i].tangent.z;
+
 			count++;
 		}
 	
 		// remember how many
 		int numberOfPoints = count*3;
 
-		// Make 2 new VBO handles
-		GLuint VBOHandles[3];
+		// Make 4 new VBO handles
+		GLuint VBOHandles[4];
 		glGenBuffers(3, VBOHandles);
 
 		// "Bind" (switch focus to) first buffer
@@ -211,6 +216,9 @@ void Object3D::CreateObjFromFile(char* filename)
 		glBindBuffer(GL_ARRAY_BUFFER, VBOHandles[2]);
 		glBufferData(GL_ARRAY_BUFFER, count*2 * sizeof(float), texCoordData, GL_STATIC_DRAW);
 
+		glBindBuffer(GL_ARRAY_BUFFER, VBOHandles[3]);
+		glBufferData(GL_ARRAY_BUFFER, numberOfPoints * sizeof(float), tangentData, GL_STATIC_DRAW);
+
 		// create 1 VAO
 		glGenVertexArrays(1, &mVAOHandle);
 		glBindVertexArray(mVAOHandle);
@@ -219,6 +227,7 @@ void Object3D::CreateObjFromFile(char* filename)
 		glEnableVertexAttribArray(0); // position
 		glEnableVertexAttribArray(1); // normal
 		glEnableVertexAttribArray(2); // texCoord
+		glEnableVertexAttribArray(3); // tangent
 
 		// map index 0 to position buffer
 		glBindBuffer(GL_ARRAY_BUFFER, VBOHandles[0]);
@@ -229,6 +238,9 @@ void Object3D::CreateObjFromFile(char* filename)
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBOHandles[2]);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBOHandles[3]);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
 
 		glBindVertexArray(0); // disable VAO
 		glUseProgram(0); // disable shader programme
@@ -290,18 +302,18 @@ void Object3D::Render(uint shaderProg)
 		}
 
 		////Check if there's a specular map
-		//if((*mMeshList)[i]->GetMaterialInfo()->map_Ks != "none")
-		//{
+		if((*mMeshList)[i]->GetMaterialInfo()->map_Ks != "none")
+		{
 
-		//	glActiveTexture(GL_TEXTURE3);
-		//	glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mSpecMapHandle);
-		//}
-		//else
-		//{
-		//	glActiveTexture(GL_TEXTURE3);
-		//	glBindTexture(GL_TEXTURE_2D, 0);
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mSpecMapHandle);
+		}
+		else
+		{
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, 0);
 
-		//}
+		}
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, (*mMeshList)[i]->mTextureHandle);

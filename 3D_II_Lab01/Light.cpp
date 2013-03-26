@@ -50,7 +50,7 @@ void Light::CreatePointlight()
 	glUseProgram(0); // disable shader programme
 }
 
-void Light::UpdateLights()
+void Light::UpdateLights(vec3 cameraPos)
 {
 	/*mWorldPos.x += mSpeed;
 
@@ -74,4 +74,7 @@ void Light::UpdateLights()
 	}
 	else
 		mDistance = 500.0f;
+
+	if(GetAsyncKeyState(VK_CONTROL))
+		mWorldPos = cameraPos;
 }

@@ -39,7 +39,7 @@ HRESULT ObjLoader::Load(char* filename)
 		else if(str == "vn")			ParseNormal(f);
 		else if(str == "vt")			ParseTexCoord(f);
 		else if(str == "g")				ParseGroup(f);
-		else if(str == "f")				ParseFace3(f);
+		else if(str == "f")				ParseFace(f);
 		else if(str == "usemtl")		ParseMaterial(f); 
 		
 			
@@ -53,6 +53,8 @@ HRESULT ObjLoader::Load(char* filename)
 
 		str = "";
 	}
+
+	SetTangents(0);
 
 	//cout << "vertices object: " << vertexPoints.size() << endl;
 	return S_OK;
@@ -98,58 +100,39 @@ void ObjLoader::ParseNormal(std::ifstream& f)
 	mNormals.push_back(n);
 }
 
+void ObjLoader::SetTangents(int startIndex)
+{
+	vector<VertexPoint>* vertices = &(mCurrentGroup->mVertices);
+	for(int i = 0 ; i < mCurrentGroup->mVertices.size(); i+=3)
+	{
+		vec3 v0 = vertices->at(i+0).position;
+		vec3 v1 = vertices->at(i+1).position;
+		vec3 v2 = vertices->at(i+2).position;
+
+		vec2 uv0 = vertices->at(i+0).texCoord;
+		vec2 uv1 = vertices->at(i+1).texCoord;
+		vec2 uv2 = vertices->at(i+2).texCoord;
+
+		vec3 deltaPos1 = v1 - v0;
+		vec3 deltaPos2 = v2 - v0;
+
+		vec2 deltaUV1 = uv1 - uv0;
+		vec2 deltaUV2 = uv2 - uv0;
+
+		float r = 1.0 / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+		vec3 tangent = (deltaPos1 * deltaUV2.y   - deltaPos2 * deltaUV1.y)*r;
+		//vec3 bitangent = (deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r;
+
+
+		mCurrentGroup->mVertices[i+0].tangent,  
+			mCurrentGroup->mVertices[i+1].tangent, 
+			mCurrentGroup->mVertices[i+2].tangent = tangent;
+	}
+
+}
+
 void ObjLoader::ParseFace(std::ifstream& f)
-{
-	std::string tri;
-	std::string sub;
-
-	for(UINT32 t = 0; t < 3; ++t)
-	{
-		f >> tri;
-		int a[3];
-		for(UINT32 i = 0; i < 3; ++i)
-		{
-			sub = tri.substr(0, tri.find("/"));
-
-			UINT32 off = (UINT32)tri.find("/");
-			if(off > 0)
-				tri = tri.substr(off + 1);
-
-			a[i] = atoi(sub.c_str()) - 1;
-		}
-		vertexPoints.push_back(VertexPoint(mPositions[a[0]], mTexCoords[a[1]], mNormals[a[2]]));
-	}
-
-}
-
-void ObjLoader::ParseFace2(std::ifstream& f)
-{
-	std::string tri;
-	std::string sub;
-
-	for(UINT32 t = 0; t < 3; ++t)
-	{
-		f >> tri;
-		int a[3];
-		for(UINT32 i = 0; i < 3; ++i)
-		{
-			sub = tri.substr(0, tri.find("/"));
-
-			UINT32 off = (UINT32)tri.find("/");
-				tri = tri.substr(off + 1);
-
-			a[i] = atoi(sub.c_str()) - 1;
-		}
-		if(a[1] == -1)
-		{
-			vertexPoints.push_back(VertexPoint(mPositions[a[0]], mNormals[a[2]]));
-		}
-		else vertexPoints.push_back(VertexPoint(mPositions[a[0]], mTexCoords[a[1]], mNormals[a[2]]));
-	}
-
-}
-
-void ObjLoader::ParseFace3(std::ifstream& f)
 {
 	std::string tri;
 	std::string sub;
@@ -183,6 +166,8 @@ void ObjLoader::ParseFace3(std::ifstream& f)
 		mCurrentGroup->mVertices.push_back(VertexPoint(vp,vt,vn));
 		count++;
 	}
+	//SetTangents(mCurrentGroup->mVertices.size() - 3);
+
 
 	if(f.peek() != '\n')
 	{
@@ -216,6 +201,8 @@ void ObjLoader::ParseFace3(std::ifstream& f)
 		mCurrentGroup->mVertices.push_back(mCurrentGroup->mVertices[mCurrentGroup->mVertices.size()-3]);
 		mCurrentGroup->mVertices.push_back(mCurrentGroup->mVertices[mCurrentGroup->mVertices.size()-2]);
 		mCurrentGroup->mVertices.push_back(VertexPoint(vp,vt,vn));
+
+		//SetTangents(mCurrentGroup->mVertices.size() - 3);
 	}
 }
 

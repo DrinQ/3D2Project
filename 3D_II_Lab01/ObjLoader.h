@@ -52,8 +52,8 @@ private:
 	void ParseGroup(std::ifstream& f);
 
 	void ParseFace(std::ifstream& f);
-	void ParseFace2(std::ifstream& f);
-	void ParseFace3(std::ifstream& f);
+
+	void SetTangents(int startIndex);
 
 	HRESULT ParseMaterialFile(std::ifstream& f, std::string fileDir);
 

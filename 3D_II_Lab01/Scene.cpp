@@ -125,6 +125,7 @@ void Scene::SetValues(mat4 model)
 	mat3 normalMatrix = glm::transpose(glm::inverse(mat3(ModelView)));
 
 	vec4 lightPos = vec4(mPointLight.GetWorldPos(), 1.0f);
+	vec4 cameraPos = vec4(mCam->GetCamPos(), 1.0f);
 	float maxDist = mPointLight.GetDistance();
 
 	//Update uniforms
@@ -132,6 +133,8 @@ void Scene::SetValues(mat4 model)
 	GLuint location = glGetUniformLocation(shaderProgHandle, "maxDist");	//gets the UniformLocation 
 	glUniform1fv(location, 1, &maxDist);
 
+
+	
 	location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
 	glUniform4fv(location, 1, &lightPos[0]);
 
@@ -181,7 +184,8 @@ void Scene::SetLightValues()
 
 void Scene::Update()
 {
-	mPointLight.UpdateLights();
+
+	mPointLight.UpdateLights(mCam->GetCamPos());
 	mShadowMap.SetLightPos(mPointLight.GetWorldPos());
 	mBthObject.Update();
 }

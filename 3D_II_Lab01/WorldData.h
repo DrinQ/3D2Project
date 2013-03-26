@@ -8,6 +8,7 @@ struct VertexPoint
 	vec3 position;
 	vec2 texCoord;
 	vec3 normal;
+	vec3 tangent;
 	
 	VertexPoint()
 	{
@@ -19,17 +20,7 @@ struct VertexPoint
 		texCoord.x = tCoord.x;
 		texCoord.y = -tCoord.y;
 		normal = norm;
-	}
-
-	VertexPoint(vec3 pos, vec3 norm)
-	{
-		position = pos;
-		normal = norm;
-	}
-
-	VertexPoint(vec3 pos)
-	{
-		position = pos;
+		tangent = vec3(0,0,0);
 	}
 };
 
