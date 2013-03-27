@@ -276,6 +276,15 @@ void Object3D::Update()
 	}
 }
 
+void Object3D::RenderGeometry(uint shaderProg)
+{
+	for(uint i = 0; i < mMeshList->size(); i++)
+	{
+		glBindVertexArray((*mMeshList)[i]->mVAOHandle);
+		glDrawArrays(GL_TRIANGLES, 0, (*mMeshList)[i]->GetVertexCount());
+	}
+}
+
 void Object3D::Render(uint shaderProg)
 {
 	for(uint i = 0; i < mMeshList->size(); i++)

@@ -214,30 +214,27 @@ void Scene::RenderShadowingObjects()
 	glCullFace(GL_FRONT);
 
 	//----Render-----------
-	
-
 	SetShadowMatrices(mTerrain->GetModelMatrix());
-	mTerrain->Render(shaderProgHandle);
+	mTerrain->RenderGeometry(shaderProgHandle);
 
 	SetShadowMatrices(mBthObject.GetModelMatrix());
-	mBthObject.Render(shaderProgHandle);
+	mBthObject.RenderGeometry(shaderProgHandle);
 
 	SetShadowMatrices(mHouse.GetModelMatrix());
-	mHouse.Render(shaderProgHandle);
+	mHouse.RenderGeometry(shaderProgHandle);
 
 	for(UINT i = 0; i < mTreeList.size(); i++)
 	{
 		SetShadowMatrices(mTreeList[i]->GetModelMatrix());
-		mTreeList[i]->Render(shaderProgHandle);
+		mTreeList[i]->RenderGeometry(shaderProgHandle);
 	}
 
 	SetShadowMatrices(mGroundQuad.GetModelMatrix());
-	mGroundQuad.Render(shaderProgHandle);
+	mGroundQuad.RenderGeometry(shaderProgHandle);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
 
 	//-------------
-
 	shadeWithShadowIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
 
 	//glUseProgram(shaderProgHandle);
@@ -273,12 +270,13 @@ void Scene::RenderObjects()
 		mTreeList[i]->Render(shaderProgHandle);
 	}
 
-	tileSize = 0.15f;
+	tileSize = 0.1f;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
 
 	SetValues(mGroundQuad.GetModelMatrix());
 	mGroundQuad.Render(shaderProgHandle);
 
+	glBindTexture(GL_TEXTURE_2D, 0); 
 }
 
 void Scene::RenderLightSources()

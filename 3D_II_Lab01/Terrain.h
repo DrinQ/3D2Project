@@ -9,7 +9,6 @@ class Terrain
 {
 private:
 	int mWidth, mHeight;
-	//float mSizeScale;
 	vector<float> mHeightMap;
 	uint* mIndices;
 	ShaderHandler* mShader;
@@ -28,6 +27,7 @@ public:
 
 	void LoadHeightMap(int m, int n,const string &filename, float heightScale, float heightOffset);
 	void CreateGrid(int width, int height, float scale);
+	void RenderGeometry(uint shaderProg);
 	void Render(uint shaderProg);
 	mat4 GetModelMatrix()
 	{ return mat4(1.0f) * glm::translate(vec3(150.0f, -100.0f, -100.0f)); }

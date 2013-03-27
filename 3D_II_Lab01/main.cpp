@@ -27,7 +27,7 @@ void renderCallback()
 	//viewPort set in the function
 	mScene->RenderShadowingObjects();
 	//--------------------------------------------------------------------------
-
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, windowWidth, windowHeight);
 	//---2nd time----- from camera perspective----------------------------------
 	

@@ -30,6 +30,7 @@ public:
 	vector<MeshPart*>* GetMeshList()
 	{ return mMeshList; }
 	
+	void RenderGeometry(uint shaderProg);
 	void Render(uint shaderProg);
 	void SetMeshList(vector<MeshPart*>* meshList)
 	{ mMeshList = meshList; }

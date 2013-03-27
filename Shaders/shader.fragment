@@ -46,10 +46,10 @@ vec3 phongModelDiffAndSpec() {
 
 	vec3 Ks = Material.Ks;
 
-	if(texture(SpecMap, TexCoord) != vec4(0.0))
-	{
-		Ks = texture(SpecMap, TexCoord).xyz;
-	}
+	//if(texture(SpecMap, TexCoord) != vec4(0.0))
+	//{
+	//	Ks = texture(SpecMap, TexCoord).xyz;
+	//}
 
 	vec3 specular = vec3(0.0);
 	

@@ -193,17 +193,22 @@ void Terrain::CreateGrid(int width, int height, float scale)
 
 }
 
+void Terrain::RenderGeometry(uint shaderProg)
+{
+	glBindVertexArray(mVAOHandle);
+	glDrawElements( GL_TRIANGLES, (mWidth-1)*(mHeight-1)*6, GL_UNSIGNED_INT, this->mIndices);
+}
+
 void Terrain::Render(uint shaderProg)
 {
 	mShader->UpdateUniform("Material.Ka", shaderProg, vec3(0.3, 0.3, 0.3));
 	mShader->UpdateUniform("Material.Kd", shaderProg, vec3(0.8, 0.8, 0.8));
-	mShader->UpdateUniform("Material.Ks", shaderProg, vec3(0.2, 0.2, 0.2));
-	mShader->UpdateUniform("Material.Shininess", shaderProg, 2.0f);
+	mShader->UpdateUniform("Material.Ks", shaderProg, vec3(0.0, 0.0, 0.0));
+	mShader->UpdateUniform("Material.Shininess", shaderProg, 0.8f);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mTexureHandle);
 
 	glBindVertexArray(mVAOHandle);
 	glDrawElements( GL_TRIANGLES, (mWidth-1)*(mHeight-1)*6, GL_UNSIGNED_INT, this->mIndices);
-	glBindVertexArray(0);
 }
