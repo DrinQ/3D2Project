@@ -84,7 +84,25 @@ void Scene::SetStaticUniforms()
 	loc = glGetUniformLocation(shaderProgHandle, "ShadowMaps[1]");
 		glUniform1i(loc, 6);
 
-	
+	mShaderHandler->UpdateUniform("BiasMatrix", shaderProgHandle, mShadowMapList[0]->GetBiasMatrix());
+
+	for(int i = 0; i < mPointLights.size(); i++)
+	{
+		float Ld = mPointLights[i]->GetIntensity().y;			// Diffuse light intensity
+		float Ls = mPointLights[i]->GetIntensity().z;			// Specular light intensity
+		vec3 Color = mPointLights[i]->GetColor();
+		float Distance = mPointLights[i]->GetDistance();
+
+		char indexStr[3];		itoa(i, indexStr, 10);
+		char intensityStr[25], colorStr[25], distanceStr[25];
+		strcpy(intensityStr, "Lights[");	strcat(intensityStr, indexStr);		strcat(intensityStr, "].Intensity");
+		strcpy(colorStr, "Lights[");		strcat(colorStr, indexStr);			strcat(colorStr, "].Color");
+		strcpy(distanceStr, "Lights[");		strcat(distanceStr, indexStr);		strcat(distanceStr, "].Distance");
+
+		mShaderHandler->UpdateUniform(intensityStr, shaderProgHandle, vec3(La, Ld, Ls));
+		mShaderHandler->UpdateUniform(colorStr, shaderProgHandle, Color);
+		mShaderHandler->UpdateUniform(distanceStr, shaderProgHandle, Distance);
+	}
 }
 
 void Scene::SetShadowMatrices(int i, mat4 model)
@@ -114,38 +132,25 @@ void Scene::SetValues(mat4 model)
 	mShaderHandler->UpdateUniform("ModelMatrix", shaderProgHandle, model);
 	mShaderHandler->UpdateUniform("NormalMatrix", shaderProgHandle, normalMatrix);
 
-
 	for(int i = 0; i < mPointLights.size(); i++)
 	{
 		//Light properties
 		vec4 LightPosition = vec4(mPointLights[i]->GetWorldPos(), 1.0f);	// Light position
-		float Ld = mPointLights[i]->GetIntensity().y;			// Diffuse light intensity
-		float Ls = mPointLights[i]->GetIntensity().z;			// Specular light intensity
-		vec3 Color = mPointLights[i]->GetColor();
-		float Distance = mPointLights[i]->GetDistance();
-
+		
 		//-----Send all the lights values------
 		char indexStr[3];		itoa(i, indexStr, 10);
-		char positionStr[25], intensityStr[25], colorStr[25], distanceStr[25];
-
+		char positionStr[25];
 		strcpy(positionStr, "Lights[");	 	strcat(positionStr, indexStr);		strcat(positionStr, "].Position");
-		strcpy(intensityStr, "Lights[");	strcat(intensityStr, indexStr);		strcat(intensityStr, "].Intensity");
-		strcpy(colorStr, "Lights[");		strcat(colorStr, indexStr);			strcat(colorStr, "].Color");
-		strcpy(distanceStr, "Lights[");		strcat(distanceStr, indexStr);		strcat(distanceStr, "].Distance");
-
-		mShaderHandler->UpdateUniform(positionStr, shaderProgHandle, LightPosition);
-		mShaderHandler->UpdateUniform(intensityStr, shaderProgHandle, vec3(La, Ld, Ls));
-		mShaderHandler->UpdateUniform(colorStr, shaderProgHandle, Color);
-		mShaderHandler->UpdateUniform(distanceStr, shaderProgHandle, Distance);
 		
-
-		//-----the shadow matrices(same amount as lights for now)-------
-		mat4 ShadowMatrix = mShadowMapList[i]->GetBiasMatrix() * mShadowMapList[i]->GetProjectionMatrix() * mShadowMapList[i]->GetViewMatrix() * model;
+		mShaderHandler->UpdateUniform(positionStr, shaderProgHandle, LightPosition);
+		
+		//-----for the shadow matrices(same amount as lights for now)-------
+		mat4 ShadowViewProj = mShadowMapList[i]->GetProjectionMatrix() * mShadowMapList[i]->GetViewMatrix();
 
 		char shadowStr[20];
-		strcpy(shadowStr, "ShadowMatrix[");	 	strcat(shadowStr, indexStr);		strcat(shadowStr, "]");
+		strcpy(shadowStr, "ShadowViewProj[");	 	strcat(shadowStr, indexStr);		strcat(shadowStr, "]");
 
-		mShaderHandler->UpdateUniform(shadowStr, shaderProgHandle, ShadowMatrix);
+		mShaderHandler->UpdateUniform(shadowStr, shaderProgHandle, ShadowViewProj);
 	}
 
 }
