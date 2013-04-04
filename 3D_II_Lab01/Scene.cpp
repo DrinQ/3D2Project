@@ -49,10 +49,10 @@ void Scene::CreateObjects()
 
 void Scene::CreateLights(int shadowMapRes)
 {
-	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(37, -62, -26), vec3(0.0f, 1.0f, 0.9f), vec3(0.2f, 0.2f, 1.0f), 500.0f, 0.2f));
+	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(37, -72, -26), vec3(0.0f, 1.0f, 0.9f), vec3(0.7f, 0.7f, 1.0f), 500.0f, 0.2f));
 	mPointLights[0]->CreatePointlight("../Textures/pointLight01.png", "png");
 
-	mPointLights.push_back(new Light(vec3(100.0f, 70.0f, 100.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.2f, 0.2f), 500.0f, 0.2f));
+	mPointLights.push_back(new Light(vec3(100.0f, 80.0f, 100.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.2f, 0.2f), 500.0f, 0.2f));
 	//mPointLights.push_back(new Light(vec3(500.0f, 85.0f, 15.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 1.0f, 1.0f), 500.0f, 0.2f));
 
 	for(int i = 0; i < mPointLights.size(); i++)

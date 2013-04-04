@@ -70,18 +70,36 @@ void main() {
 	//	else
 			normal = TNormal;
 
-     // The sum of the comparisons with nearby texels  
-	 float sum = 0;
+    vec3 lightAndShadowResult = vec3(0.0);
+	vec3 ambient = vec3(Lights[0].Intensity.x) * Material.Ka;
 
 	for(int index = 0; index < 2; index++)
 	{
+		// The sum of the comparisons with nearby texels  
+		float sum = 0;
+
 		// Sum contributions from texels around ShadowCoord  
 		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(-1,-1));  
 		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(-1,1));  
 		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(1,1));  
 		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(1,-1));  
+
+		float shadow = sum * 0.25;
+
+		vec3 diffAndSpec = vec3(0.0);
+		vec4 LightViewPos = ViewMatrix * Lights[index].Position;
+
+		float lightDist = abs(length(WorldPosition - Lights[index].Position));
+		float lightStrength = 0;
+		if( lightDist < Lights[index].Distance )
+			lightStrength = 1.0-(lightDist / Lights[index].Distance);
+		
+		//för varje ljus
+		diffAndSpec = phongModelDiffAndSpec(index, LightViewPos, lightStrength);
+
+		lightAndShadowResult += diffAndSpec * shadow;
 	}
-	float shadow = sum * 0.25;
+	
 	//float shadow = textureProj(ShadowMaps[index], ShadowCoord);
 
 	vec2 xy = TexCoord.xy;
@@ -90,28 +108,9 @@ void main() {
 
 	//vec4 texColor = texture( Tex1, TexCoord );
 
-	//--------Light calculations--------------------------------------------------------------
-	vec3 ambient = vec3(Lights[0].Intensity.x) * Material.Ka;
-	vec3 diffAndSpec = vec3(0.0);
-
-	for(int i = 0; i < 2; i++)
-	{
-		vec4 LightViewPos = ViewMatrix * Lights[i].Position;
-
-		float lightDist = abs(length(WorldPosition - Lights[i].Position));
-		float lightStrength = 0;
-		if( lightDist < Lights[i].Distance )
-			lightStrength = 1.0-(lightDist / Lights[i].Distance);
-		
-		//för alla ljus
-		diffAndSpec += phongModelDiffAndSpec(i, LightViewPos, lightStrength);
-	}
-	
-//----------------------------------------------------------------------------------------
-
     // If the fragment is in shadow, use ambient light only.  
 	if(texColor != vec4(0.0))
-		FragColor = vec4(diffAndSpec * shadow + ambient, 1.0) * texColor; 
+		FragColor = vec4(lightAndShadowResult + ambient, 1.0) * texColor; 
 	else
-		FragColor = vec4(diffAndSpec * shadow + ambient, 1.0);
+		FragColor = vec4(lightAndShadowResult + ambient, 1.0);
 }
