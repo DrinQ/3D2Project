@@ -193,7 +193,7 @@ void Terrain::CreateGrid(int width, int height, float scale)
 
 }
 
-void Terrain::RenderGeometry(uint shaderProg)
+void Terrain::RenderGeometry()
 {
 	glBindVertexArray(mVAOHandle);
 	glDrawElements( GL_TRIANGLES, (mWidth-1)*(mHeight-1)*6, GL_UNSIGNED_INT, this->mIndices);

@@ -16,7 +16,6 @@ Object3D::Object3D(vec3 pos, float scale, vec3 rot)
 	mRotation =	glm::rotate(mRotationAngles.x, vec3(1.0,0.0,0.0)) * glm::rotate(mRotationAngles.y, vec3(0.0,1.0,0.0)) * glm::rotate(mRotationAngles.z, vec3(0.0,0.0,1.0));
 	
 	mModelMatrix = mTranslation * mRotation * glm::scale(glm::mat4(1.0f), vec3(mScale));
-	//mMaterial = MaterialInfo(vec3(1.0), vec3(0.8), vec3(0.7), 3.0);
 
 }
 
@@ -276,7 +275,7 @@ void Object3D::Update()
 	}
 }
 
-void Object3D::RenderGeometry(uint shaderProg)
+void Object3D::RenderGeometry()
 {
 	for(uint i = 0; i < mMeshList->size(); i++)
 	{

@@ -4,21 +4,15 @@
 
 Scene::Scene(int windowWidth, int windowHeight)
 {
-	mCameraProjectionMat = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 5000.f);
+	mCameraProjectionMat = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 2000.f);
 	mCam = new Camera();
 
 	mSkyBox = SkyBox("../Textures/CubeMaps/skybox", windowWidth, windowHeight);
 	mSkyBox.BindBuffers();
 
-	
+	La = 0.3f;
 }
 
-void Scene::CreateShadowMap(int res)
-{
-	mShadowMap = ShadowMap(mPointLight.GetWorldPos(), mPointLight.GetWorldPos()+vec3(0.0f, -1.0f, -0.01f), res, res);
-	mShadowMap.CreateShadowMapTexture();
-	mShadowMapRes = res;
-}
 
 Scene::Scene()
 {
@@ -53,11 +47,25 @@ void Scene::CreateObjects()
 	}
 }
 
-void Scene::CreateLights()
+void Scene::CreateLights(int shadowMapRes)
 {
-	mPointLight = Light(vec3(0.0f, 85.0f, 15.0f), vec3(1.0f, 1.0f, 1.0f), vec3(0.9f, 0.9f, 0.9f), 500.0f, 0.2f);
-	mPointLight.CreatePointlight();
-	mPointLight.LoadTexture("../Textures/pointLight01.png", "png");
+	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(37, -62, -26), vec3(0.0f, 1.0f, 0.9f), vec3(0.2f, 0.2f, 1.0f), 500.0f, 0.2f));
+	mPointLights[0]->CreatePointlight("../Textures/pointLight01.png", "png");
+
+	mPointLights.push_back(new Light(vec3(100.0f, 70.0f, 100.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.2f, 0.2f), 500.0f, 0.2f));
+	//mPointLights.push_back(new Light(vec3(500.0f, 85.0f, 15.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 1.0f, 1.0f), 500.0f, 0.2f));
+
+	for(int i = 0; i < mPointLights.size(); i++)
+	{
+		CreateShadowMaps(i, shadowMapRes);
+	}
+}
+
+void Scene::CreateShadowMaps(int index, int res)
+{
+	mShadowMapList.push_back(new ShadowMap(mPointLights[index]->GetWorldPos(), mPointLights[index]->GetWorldPos()+vec3(0.0f, -1.0f, -0.01f), res));
+	mShadowMapList[index]->CreateShadowMapTexture(index);
+	//mShadowMapRes = res;
 }
 
 void Scene::SetStaticUniforms()
@@ -67,50 +75,25 @@ void Scene::SetStaticUniforms()
 	//Texture units
 	GLuint loc = glGetUniformLocation(shaderProgHandle, "Tex1");
 		glUniform1i(loc, 0);
-	loc = glGetUniformLocation(shaderProgHandle, "ShadowMap");
-		glUniform1i(loc, 1);
 	loc = glGetUniformLocation(shaderProgHandle, "BumpMap");
 		glUniform1i(loc, 2);
 	/*loc = glGetUniformLocation(shaderProgHandle, "SpecMap");
 		glUniform1i(loc, 3);*/
+	loc = glGetUniformLocation(shaderProgHandle, "ShadowMaps[0]");
+		glUniform1i(loc, 5);
+	loc = glGetUniformLocation(shaderProgHandle, "ShadowMaps[1]");
+		glUniform1i(loc, 6);
 
-	//Light properties
 	
-	vec4 LightPosition = vec4(mPointLight.GetWorldPos(), 1.0f);	// Light position
-	vec3 La = vec3(0.3f, 0.3f, 0.3f);			// Ambient light intensity
-	vec3 Ld = mPointLight.GetDiffuse();			// Diffuse light intensity
-	vec3 Ls = mPointLight.GetSpecular();			// Specular light intensity
-
-	//------
-	
-	GLuint location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
-	glUniform4fv(location, 1, &LightPosition[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Light.La");	//gets the UniformLocation
-	glUniform3fv(location, 1, &La[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Light.Ld");	//gets the UniformLocation 
-	glUniform3fv(location, 1, &Ld[0]);
-
-	location = glGetUniformLocation(shaderProgHandle, "Light.Ls");	//gets the UniformLocation 
-	glUniform3fv(location, 1, &Ls[0]);
-
-
 }
 
-void Scene::SetShadowMatrices(mat4 model)
+void Scene::SetShadowMatrices(int i, mat4 model)
 {
-	mat4 Projection = mShadowMap.GetProjectionMatrix();
-	mat4 viewMatrix = mShadowMap.GetViewMatrix(); 
-	mat4 ModelView = viewMatrix * model; 
+	mat4 Projection = mShadowMapList[i]->GetProjectionMatrix();
+	mat4 ModelView = mShadowMapList[i]->GetViewMatrix() * model; 
 
-	GLuint location = glGetUniformLocation(shaderProgHandle, "ModelViewMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &ModelView[0][0]); }
-
-	location = glGetUniformLocation(shaderProgHandle, "ProjectionMatrix");	//gets the UniformLocation from shader.vertex
-	if( location > 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &Projection[0][0]); }
+	mShaderHandler->UpdateUniform("ModelViewMatrix", shadowShaderProgHandle, ModelView);
+	mShaderHandler->UpdateUniform("ProjectionMatrix", shadowShaderProgHandle, Projection);
 }
 
 void Scene::SetValues(mat4 model)
@@ -118,52 +101,64 @@ void Scene::SetValues(mat4 model)
 	//matrices
 //	mat4 Projection = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
 	mat4 viewMatrix = mCam->GetCamViewMatrix();
-	//mat4 Projection = mShadowMap.GetProjectionMatrix();
+	//mat4 Projection = mShadowMapList[0]->GetProjectionMatrix();
 	//mat4 viewMatrix = mShadowMap.GetViewMatrix();
-	mat4 ModelView = viewMatrix * model; 
-	mat4 ShadowMatrix = mShadowMap.GetBiasMatrix() * mShadowMap.GetProjectionMatrix() * mShadowMap.GetViewMatrix() * model;
-	mat3 normalMatrix = glm::transpose(glm::inverse(mat3(ModelView)));
+	//mat4 ModelView = viewMatrix * model; 
+	mat3 normalMatrix = glm::transpose(glm::inverse(mat3(viewMatrix * model)));
 
-	vec4 lightPos = vec4(mPointLight.GetWorldPos(), 1.0f);
 	vec4 cameraPos = vec4(mCam->GetCamPos(), 1.0f);
-	float maxDist = mPointLight.GetDistance();
 
 	//Update uniforms
-
-	GLuint location = glGetUniformLocation(shaderProgHandle, "maxDist");	//gets the UniformLocation 
-	glUniform1fv(location, 1, &maxDist);
-
-
 	
-	location = glGetUniformLocation(shaderProgHandle, "lightPos");	//gets the UniformLocation 
-	glUniform4fv(location, 1, &lightPos[0]);
+	mShaderHandler->UpdateUniform("ViewMatrix", shaderProgHandle, viewMatrix);
+	mShaderHandler->UpdateUniform("ModelMatrix", shaderProgHandle, model);
+	mShaderHandler->UpdateUniform("NormalMatrix", shaderProgHandle, normalMatrix);
 
-	location = glGetUniformLocation(shaderProgHandle, "ShadowMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &ShadowMatrix[0][0]); }
 
-	location = glGetUniformLocation(shaderProgHandle, "ViewMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &viewMatrix[0][0]); }
+	for(int i = 0; i < mPointLights.size(); i++)
+	{
+		//Light properties
+		vec4 LightPosition = vec4(mPointLights[i]->GetWorldPos(), 1.0f);	// Light position
+		float Ld = mPointLights[i]->GetIntensity().y;			// Diffuse light intensity
+		float Ls = mPointLights[i]->GetIntensity().z;			// Specular light intensity
+		vec3 Color = mPointLights[i]->GetColor();
+		float Distance = mPointLights[i]->GetDistance();
 
-	location = glGetUniformLocation(shaderProgHandle, "ModelViewMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix4fv(location, 1, GL_FALSE, &ModelView[0][0]); }
+		//-----Send all the lights values------
+		char indexStr[3];		itoa(i, indexStr, 10);
+		char positionStr[25], intensityStr[25], colorStr[25], distanceStr[25];
 
-	location = glGetUniformLocation(shaderProgHandle, "NormalMatrix");	//gets the UniformLocation from shader.vertex
-	if( location >= 0 )
-	{ glUniformMatrix3fv(location, 1, GL_FALSE, &normalMatrix[0][0]); }
+		strcpy(positionStr, "Lights[");	 	strcat(positionStr, indexStr);		strcat(positionStr, "].Position");
+		strcpy(intensityStr, "Lights[");	strcat(intensityStr, indexStr);		strcat(intensityStr, "].Intensity");
+		strcpy(colorStr, "Lights[");		strcat(colorStr, indexStr);			strcat(colorStr, "].Color");
+		strcpy(distanceStr, "Lights[");		strcat(distanceStr, indexStr);		strcat(distanceStr, "].Distance");
+
+		mShaderHandler->UpdateUniform(positionStr, shaderProgHandle, LightPosition);
+		mShaderHandler->UpdateUniform(intensityStr, shaderProgHandle, vec3(La, Ld, Ls));
+		mShaderHandler->UpdateUniform(colorStr, shaderProgHandle, Color);
+		mShaderHandler->UpdateUniform(distanceStr, shaderProgHandle, Distance);
+		
+
+		//-----the shadow matrices(same amount as lights for now)-------
+		mat4 ShadowMatrix = mShadowMapList[i]->GetBiasMatrix() * mShadowMapList[i]->GetProjectionMatrix() * mShadowMapList[i]->GetViewMatrix() * model;
+
+		char shadowStr[20];
+		strcpy(shadowStr, "ShadowMatrix[");	 	strcat(shadowStr, indexStr);		strcat(shadowStr, "]");
+
+		mShaderHandler->UpdateUniform(shadowStr, shaderProgHandle, ShadowMatrix);
+	}
+
 }
 
-void Scene::SetLightValues()
+void Scene::SetLightValues(int i)
 {
 	//matrices
 	//mat4 Projection = glm::perspective(45.0f, (float)windowWidth / (float)windowHeight, 1.0f, 500.f);
-	mat4 Model = glm::translate(mPointLight.GetWorldPos());
+	mat4 Model = glm::translate(mPointLights[i]->GetWorldPos());
 	mat4 viewMatrix = mCam->GetCamViewMatrix();
 	mat4 ModelView = viewMatrix * Model; 
 
-	vec4 lightColor = vec4(mPointLight.GetSpecular(), 1.0f) *1.1f;
+	vec4 lightColor = vec4(mPointLights[i]->GetColor(), 1.0f) *1.1f;
 	float particleSize = 2.0;
 
 	//------------------Variables in particleShader.geometry-------------------
@@ -184,9 +179,16 @@ void Scene::SetLightValues()
 
 void Scene::Update()
 {
+	if(GetAsyncKeyState('Q') != 0)
+		mPointLights[1]->UpdateLights(mCam->GetCamPos());
+	else
+		mPointLights[0]->UpdateLights(mCam->GetCamPos());
 
-	mPointLight.UpdateLights(mCam->GetCamPos());
-	mShadowMap.SetLightPos(mPointLight.GetWorldPos());
+	for(int i = 0; i < mShadowMapList.size(); i++)
+	{
+		mShadowMapList[i]->SetLightPos(mPointLights[i]->GetWorldPos());
+	}
+
 	mBthObject.Update();
 }
 
@@ -201,56 +203,56 @@ void Scene::RenderSkyBox()
 
 void Scene::RenderShadowingObjects()
 {
-	recordDepthIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "recordDepth");
+	glUseProgram(shadowShaderProgHandle);
 
-	glUseProgram(shaderProgHandle);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, mShadowMap.GetShadowFBOHandle());
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &recordDepthIndex);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 0); 
-	glCullFace(GL_FRONT);
-
-	//----Render-----------
-	SetShadowMatrices(mTerrain->GetModelMatrix());
-	mTerrain->RenderGeometry(shaderProgHandle);
-
-	SetShadowMatrices(mBthObject.GetModelMatrix());
-	mBthObject.RenderGeometry(shaderProgHandle);
-
-	SetShadowMatrices(mHouse.GetModelMatrix());
-	mHouse.RenderGeometry(shaderProgHandle);
-
-	for(UINT i = 0; i < mTreeList.size(); i++)
+	for(int i = 0; i < mShadowMapList.size(); i++)
 	{
-		SetShadowMatrices(mTreeList[i]->GetModelMatrix());
-		mTreeList[i]->RenderGeometry(shaderProgHandle);
+		glBindFramebuffer(GL_FRAMEBUFFER, mShadowMapList[i]->GetShadowFBOHandle());
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		glCullFace(GL_FRONT);
+		glActiveTexture(GL_TEXTURE5+i);
+		glBindTexture(GL_TEXTURE_2D, 0); 
+		
+
+		//----Render-----------
+		//SetShadowMatrices(i, mTerrain->GetModelMatrix());
+		//mTerrain->RenderGeometry();
+
+		SetShadowMatrices(i, mBthObject.GetModelMatrix());
+		mBthObject.RenderGeometry();
+
+		SetShadowMatrices(i, mHouse.GetModelMatrix());
+		mHouse.RenderGeometry();
+
+		for(UINT j = 0; j < mTreeList.size(); j++)
+		{
+			SetShadowMatrices(i, mTreeList[j]->GetModelMatrix());
+			mTreeList[j]->RenderGeometry();
+		}
+
+		SetShadowMatrices(i, mGroundQuad.GetModelMatrix());
+		mGroundQuad.RenderGeometry();
 	}
 
-	SetShadowMatrices(mGroundQuad.GetModelMatrix());
-	mGroundQuad.RenderGeometry(shaderProgHandle);
-
-	
-
-	//-------------
-	shadeWithShadowIndex = glGetSubroutineIndex(shaderProgHandle, GL_FRAGMENT_SHADER, "shadeWithShadow");
-
-	//glUseProgram(shaderProgHandle);
-	glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &shadeWithShadowIndex);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Scene::RenderObjects()
 {
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, mShadowMap.GetDepthTexHandle()); 
+	glUseProgram(shaderProgHandle);
+	
 	//glActiveTexture(GL_TEXTURE0);
 	glCullFace(GL_BACK);
 
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgHandle, "ProjectionMatrix"), 1, GL_FALSE, &mCameraProjectionMat[0][0]);
 
-	
+	for(int i = 0; i < mShadowMapList.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE5+i);
+		glBindTexture(GL_TEXTURE_2D, mShadowMapList[i]->GetDepthTexHandle()); 
+	}
+
 	//-------Render------
 	float tileSize = 1.0;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
@@ -264,10 +266,10 @@ void Scene::RenderObjects()
 	SetValues(mHouse.GetModelMatrix());
 	mHouse.Render(shaderProgHandle);
 
-	for(UINT i = 0; i < mTreeList.size(); i++)
+	for(UINT j = 0; j < mTreeList.size(); j++)
 	{
-		SetValues(mTreeList[i]->GetModelMatrix());
-		mTreeList[i]->Render(shaderProgHandle);
+		SetValues(mTreeList[j]->GetModelMatrix());
+		mTreeList[j]->Render(shaderProgHandle);
 	}
 
 	tileSize = 0.1f;
@@ -276,7 +278,7 @@ void Scene::RenderObjects()
 	SetValues(mGroundQuad.GetModelMatrix());
 	mGroundQuad.Render(shaderProgHandle);
 
-	glBindTexture(GL_TEXTURE_2D, 0); 
+	//glBindTexture(GL_TEXTURE_2D, 0); 
 }
 
 void Scene::RenderLightSources()
@@ -285,20 +287,24 @@ void Scene::RenderLightSources()
 
 	glUniformMatrix4fv(glGetUniformLocation(billboardShaderProgHandle, "ProjectionMatrix"), 1, GL_FALSE, &mCameraProjectionMat[0][0]);
 	
-	SetLightValues();
-
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mPointLight.mTextureHandle);
-	glBindVertexArray(mPointLight.mVAOHandle); // bind VAO
-	glDrawArrays( GL_POINTS, 0, 1);
+	glBindTexture(GL_TEXTURE_2D, mPointLights[0]->mTextureHandle);
+	glBindVertexArray(mPointLights[0]->mVAOHandle); // bind VAO
+	for(int i = 0; i < mPointLights.size(); i++)
+	{
+		SetLightValues(i);
+		glDrawArrays( GL_POINTS, 0, 1);
+	}
 }
 
 void Scene::CreateShaderPrograms()
 {
-	shaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
-	billboardShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
-	skyboxShaderProgHandle = mShaderHandler.CreateShaderProgram("../Shaders/skyboxShader.vertex", "../Shaders/skyboxShader.fragment");
+	shaderProgHandle = mShaderHandler->CreateShaderProgram("../Shaders/shader.vertex", "../Shaders/shader.fragment");
+	shadowShaderProgHandle = mShaderHandler->CreateShaderProgram("../Shaders/shadowShader.vertex", "../Shaders/shadowShader.fragment");
+	billboardShaderProgHandle = mShaderHandler->CreateShaderProgram("../Shaders/particleShader.vertex", "../Shaders/particleShader.fragment", "../Shaders/particleShader.geometry");
+	skyboxShaderProgHandle = mShaderHandler->CreateShaderProgram("../Shaders/skyboxShader.vertex", "../Shaders/skyboxShader.fragment");
 }
 
 

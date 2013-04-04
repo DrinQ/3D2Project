@@ -12,23 +12,26 @@
 class Scene
 {
 private:
+	float La;		// Ambient light intensity
+
 	Object3D mBthObject;
 	Object3D mGroundQuad;
 	Object3D mHouse;
 	vector<Object3D*> mTreeList;
 	Terrain* mTerrain;
 
-	Light mPointLight;
+	Object3D quad1;
+	Object3D quad2;
 
-	ShadowMap mShadowMap;
+	vector<Light*> mPointLights;
+
+	vector<ShadowMap*> mShadowMapList;
 	SkyBox mSkyBox;
-	int mShadowMapRes;
+	//int mShadowMapRes;
 
-	GLuint recordDepthIndex;
-	GLuint shadeWithShadowIndex;
-
-	ShaderHandler mShaderHandler;
+	ShaderHandler* mShaderHandler;
 	GLuint shaderProgHandle; // integer to get hold of our shader programme
+	GLuint shadowShaderProgHandle;
 	GLuint billboardShaderProgHandle;
 	GLuint skyboxShaderProgHandle;
 
@@ -36,9 +39,9 @@ private:
 
 	Camera* mCam;
 
-	void SetShadowMatrices(mat4 model);
+	void SetShadowMatrices(int i, mat4 model);
 	void SetValues(mat4 model);
-	void SetLightValues();
+	void SetLightValues(int i);
 
 public:
 	
@@ -47,8 +50,8 @@ public:
 	~Scene();
 
 	void CreateObjects();
-	void CreateLights();
-	void CreateShadowMap(int res);
+	void CreateLights(int shadowMapRes);
+	void CreateShadowMaps(int index, int res);
 	void Update();
 
 	void RenderSkyBox();

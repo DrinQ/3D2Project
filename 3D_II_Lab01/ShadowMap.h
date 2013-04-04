@@ -13,15 +13,13 @@ private:
 	vec3 mTargetDirection;
 	mat4 mViewMatrix;
 	mat4 mProjectionMatrix;
-	mat4 mBiasMatrix;
 
-	//Calculate the ShadowMatrix in the main class! (Needs ModelMatrix)
 public:
-	ShadowMap(vec3 lightPos, vec3 target, int resW, int resH);
+	ShadowMap(vec3 lightPos, vec3 target, int res);
 	ShadowMap();
 	~ShadowMap();
 
-	void CreateShadowMapTexture();
+	void CreateShadowMapTexture(int i);
 	void ChangeResolution(int size);
 	
 	GLuint GetShadowFBOHandle()
@@ -32,8 +30,7 @@ public:
 		{ return mViewMatrix; }
 	mat4 GetProjectionMatrix()
 		{ return mProjectionMatrix; }
-	mat4 GetBiasMatrix()
-		{ return mBiasMatrix; }
+	mat4 GetBiasMatrix();
 	void SetLightPos(vec3 pos);
 };
 #endif 

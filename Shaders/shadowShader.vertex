@@ -1,0 +1,24 @@
+#version 410
+layout (location = 0) in vec3 VertexPosition;
+//layout (location = 1) in vec3 VertexNormal;
+layout (location = 2) in vec2 VertexTexCoord;
+
+out vec4 EyePosition;
+out vec3 TNormal;
+out vec2 TexCoord;
+
+
+//Matrices-----------------------------------------
+uniform mat4 ModelViewMatrix;
+uniform mat4 ProjectionMatrix;	
+
+void main()
+{
+	// Convert normal and position to eye coords
+	
+	TexCoord = VertexTexCoord;
+	EyePosition = ModelViewMatrix * vec4(VertexPosition,1.0);
+	mat4 MVP = ProjectionMatrix * ModelViewMatrix;
+
+	gl_Position = MVP * vec4(VertexPosition,1.0);
+}

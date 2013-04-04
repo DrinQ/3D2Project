@@ -1,0 +1,14 @@
+#version 410
+//in vec4 EyePosition;
+in vec2 TexCoord;
+//in vec4 ShadowCoord;
+
+//uniform sampler2D Tex1;
+//uniform sampler2DShadow ShadowMap;
+
+//layout( location = 0 ) out vec4 FragColor;
+
+
+void main() {
+	// Do nothing, depth will be written automatically 
+}

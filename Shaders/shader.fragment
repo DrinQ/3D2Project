@@ -2,96 +2,32 @@
 in vec4 EyePosition;
 in vec3 TNormal;
 in vec2 TexCoord;
-in vec4 LightWPosition;
-in float lightIntensity;
-in vec4 ShadowCoord;
+in vec4 ShadowCoord[2];
+
+in vec3 ambient;
+in vec3 diffAndSpec;
 
 uniform sampler2D Tex1;
-uniform sampler2DShadow ShadowMap;
-uniform sampler2D BumpMap;
-uniform sampler2D SpecMap;
-
-vec3 normal;
+uniform sampler2DShadow ShadowMaps[2];
 
 uniform float TileSize;
 
 layout( location = 0 ) out vec4 FragColor;
 
-struct LightInfo{
-	//vec4 LightPosition; // Light position in eye coords.
-	vec3 La;			// Ambient light intensity
-	vec3 Ld;			// Diffuse light intensity
-	vec3 Ls;			// Specular light intensity
-};
-uniform LightInfo Light;
-
-struct MaterialInfo{
-	vec3 Ka;			// Ambient reflectivity
-	vec3 Kd;		    // Diffuse reflectivity
-	vec3 Ks;			// Specular reflectivity
-	float Shininess;	// Specular shininess factor
-};
-uniform MaterialInfo Material;
-
-vec3 phongModelDiffAndSpec() {
-
-	vec3 s = normalize(vec3(LightWPosition - EyePosition));
-	vec3 v = normalize(-EyePosition.xyz);	
-	vec3 r = reflect( -s, normal );
-
-	float sDotN = max( dot(s, normal), 0.0 );
-	
-	//Diffuse light
-	vec3 diffuse = Light.Ld * Material.Kd * sDotN * lightIntensity;
-
-	vec3 Ks = Material.Ks;
-
-	//if(texture(SpecMap, TexCoord) != vec4(0.0))
-	//{
-	//	Ks = texture(SpecMap, TexCoord).xyz;
-	//}
-
-	vec3 specular = vec3(0.0);
-	
-	//Specular light
-	if( sDotN > 0.0 )
-		specular = Light.Ls * Ks * pow( max( dot(r,v), 0.0 ), Material.Shininess ) * lightIntensity;
-		
-	
-	//LightIntensity = ambient + diffuse + spec;
-	return vec3(diffuse + specular);
-}
-
-
-subroutine void RenderPassType(); 
-subroutine uniform RenderPassType RenderPass;
-
-subroutine (RenderPassType) 
-void shadeWithShadow() 
-{  
-	//if(texture(BumpMap, TexCoord) != vec4(0.0))
-	//{
-	//	vec4 norm = texture(BumpMap, TexCoord);
-	//	normal.x = 2 * (norm.x - 0.5);
-	//	normal.y = 2 * (norm.y - 0.5);
-//		normal.z = 2 * (norm.z - 0.5);
-//	}
-//	else
-		normal = TNormal;
-
-
-	vec3 ambient = Light.La * Material.Ka;
-	vec3 diffAndSpec = phongModelDiffAndSpec();
-
+void main() {
      // The sum of the comparisons with nearby texels  
 	 float sum = 0;
-    // Sum contributions from texels around ShadowCoord  
-	sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(-1,-1));  
-	sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(-1,1));  
-	sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,1));  
-	sum += textureProjOffset(ShadowMap, ShadowCoord, ivec2(1,-1));  
+
+	for(int index = 0; index < 2; index++)
+	{
+		// Sum contributions from texels around ShadowCoord  
+		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(-1,-1));  
+		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(-1,1));  
+		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(1,1));  
+		sum += textureProjOffset(ShadowMaps[index], ShadowCoord[index], ivec2(1,-1));  
+	}
 	float shadow = sum * 0.25;
-	//float shadow = textureProj(ShadowMap, ShadowCoord);
+	//float shadow = textureProj(ShadowMaps[index], ShadowCoord);
 
 	vec2 xy = TexCoord.xy;
 	vec2 phase = fract(xy / TileSize);
@@ -104,16 +40,4 @@ void shadeWithShadow()
 		FragColor = vec4(diffAndSpec * shadow + ambient, 1.0) * texColor; 
 	else
 		FragColor = vec4(diffAndSpec * shadow + ambient, 1.0);
-}
-
-subroutine (RenderPassType) 
-void recordDepth() 
-{    
-// Do nothing, depth will be written automatically 
-}
-
-void main() {
-
-	// This will call either shadeWithShadow or recordDepth  
-	RenderPass(); 
 }

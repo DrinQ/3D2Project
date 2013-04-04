@@ -6,7 +6,7 @@ int windowWidth = 1280;
 int windowHeight = 720;
 int frameCount = 0;
 char windowTitle[128] = "Project 3DII";
-int shadowMapRes = 4096*0.75; 
+int shadowMapRes = 4096*0.5; 
 
 Scene* mScene;
 
@@ -27,7 +27,7 @@ void renderCallback()
 	//viewPort set in the function
 	mScene->RenderShadowingObjects();
 	//--------------------------------------------------------------------------
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
 	glViewport(0, 0, windowWidth, windowHeight);
 	//---2nd time----- from camera perspective----------------------------------
 	
@@ -130,9 +130,9 @@ int main(int argc, char** argv){
 
 	mScene = new Scene(windowWidth, windowHeight);
 	mScene->CreateShaderPrograms();
-	mScene->CreateLights();
 	mScene->CreateObjects();
-	mScene->CreateShadowMap(shadowMapRes);
+	mScene->CreateLights(shadowMapRes);
+	//mScene->CreateShadowMap(shadowMapRes);
 	
 	mScene->SetStaticUniforms();
 	
@@ -155,7 +155,7 @@ int main(int argc, char** argv){
 			
 			mScene->GetCam()->UpdateMatrices();
 			if(GetAsyncKeyState(VK_SPACE) == 0)
-				mScene->GetCam()->Control(0.8f, 0.08f, true, windowWidth*0.5f, windowHeight*0.5f);
+				mScene->GetCam()->Control(1.2f, 0.08f, true, windowWidth*0.5f, windowHeight*0.5f);
 			
 			mScene->Update();
 

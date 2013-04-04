@@ -7,31 +7,30 @@ class Light
 {
 private:
 	vec3 mWorldPos;
-	vec3 mDiffuse;
-	vec3 mSpecular;
+	vec3 mIntensity; //holds the La, Ld and Ls intensities
+	vec3 mColor;
 	float mDistance; //distance light reaches
-
 	float mSpeed;
 
 public:
 	GLuint mVAOHandle;
 	GLuint mTextureHandle;
 
-	Light(vec3 pos, vec3 diff, vec3 spec, float dist, float speed);
-	Light(void);
-	~Light(void);
+	Light(vec3 pos, vec3 intens, vec3 col, float dist, float speed);
+	Light();
+	~Light();
 
-	void CreatePointlight();
+	void CreatePointlight(char* file, char* format);
 	void UpdateLights(vec3 cameraPos);
 
 	vec3 GetWorldPos()
 	{ return mWorldPos; }
 	float GetDistance()
 	{ return mDistance; }
-	vec3 GetDiffuse()
-	{ return mDiffuse; }
-	vec3 GetSpecular()
-	{ return mSpecular; }
+	vec3 GetIntensity()
+	{ return mIntensity; }
+	vec3 GetColor()
+	{ return mColor; }
 
 	void LoadTexture(char* file, char* format)
 {

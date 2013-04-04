@@ -112,6 +112,8 @@
     <None Include="..\Shaders\particleShader.vertex" />
     <None Include="..\Shaders\shader.fragment" />
     <None Include="..\Shaders\shader.vertex" />
+    <None Include="..\Shaders\shadowShader.fragment" />
+    <None Include="..\Shaders\shadowShader.vertex" />
     <None Include="..\Shaders\skyboxShader.fragment" />
     <None Include="..\Shaders\skyboxShader.vertex" />
   </ItemGroup>

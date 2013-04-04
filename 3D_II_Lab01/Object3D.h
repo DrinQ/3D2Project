@@ -29,9 +29,12 @@ public:
 	void Update();
 	vector<MeshPart*>* GetMeshList()
 	{ return mMeshList; }
-	
-	void RenderGeometry(uint shaderProg);
+	vec3 GetPosition()
+	{ return mWorldPos; }
+
+	void RenderGeometry();
 	void Render(uint shaderProg);
+
 	void SetMeshList(vector<MeshPart*>* meshList)
 	{ mMeshList = meshList; }
 };

@@ -1,20 +1,15 @@
 #include "ShadowMap.h"
 
 
-ShadowMap::ShadowMap(vec3 lightPos, vec3 target, int resW, int resH)
+ShadowMap::ShadowMap(vec3 lightPos, vec3 target, int res)
 {
 	mLightPosition = lightPos;
 	mTargetDirection = target;
 
-	mShadowMapWidth = resW;
-	mShadowMapHeight = resH;
-	mProjectionMatrix = glm::perspective(140.0f, (float)resW/(float)resH, 5.0f, 300.0f);
+	mShadowMapWidth = mShadowMapHeight = res;
+	mProjectionMatrix = glm::perspective(140.0f, (float)res/(float)res, 1.0f, 300.0f);
 	mViewMatrix = glm::lookAt(mLightPosition, mTargetDirection, vec3(0.0f, 1.0f, 0.0f));
 
-	mBiasMatrix = mat4( 0.5, 0.0, 0.0, 0.0,
-                        0.0, 0.5, 0.0, 0.0,
-                        0.0, 0.0, 0.5, 0.0,
-                        0.5, 0.5, 0.5, 1.0);
 }
 
 ShadowMap::ShadowMap()
@@ -25,7 +20,7 @@ ShadowMap::~ShadowMap()
 {
 }
 
-void ShadowMap::CreateShadowMapTexture()
+void ShadowMap::CreateShadowMapTexture(int i)
 {
 	GLfloat border[] = { 1.0, 0.0, 0.0, 0.0 };
 
@@ -42,7 +37,7 @@ void ShadowMap::CreateShadowMapTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
 	//Assign the shadow map to texture channel 1 
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE5+i);
 	glBindTexture(GL_TEXTURE_2D, mDepthTex);
 
 	//Create and set up the FBO 
@@ -67,4 +62,12 @@ void ShadowMap::ChangeResolution(int size)
 	glBindTexture(GL_TEXTURE_2D, mDepthTex); 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, mShadowMapWidth, mShadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
 	glBindTexture(GL_TEXTURE_2D, 0); 
+}
+
+mat4 ShadowMap::GetBiasMatrix()
+{
+	return  mat4( 0.5, 0.0, 0.0, 0.0,
+                  0.0, 0.5, 0.0, 0.0,
+                  0.0, 0.0, 0.5, 0.0,
+                  0.5, 0.5, 0.5, 1.0);
 }

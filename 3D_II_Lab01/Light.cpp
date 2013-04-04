@@ -2,25 +2,27 @@
 
 
 
-Light::Light(vec3 pos, vec3 diff, vec3 spec, float dist, float speed)
+Light::Light(vec3 pos, vec3 intens, vec3 col, float dist, float speed)
 	{
 		mWorldPos = pos;
-		mDiffuse = diff;
-		mSpecular = spec;
+		mIntensity = intens;
+		mColor = col;
 		mDistance = dist;
 		mSpeed = speed;
 	}
 
-Light::Light(void)
+Light::Light()
 {
 }
 
-Light::~Light(void)
+Light::~Light()
 {
 }
 
-void Light::CreatePointlight()
+void Light::CreatePointlight(char* file, char* format)
 {
+	LoadTexture(file, format);
+
 	float positionData[] = {
 	0.0f, 0.0f, 0.0f
 	};
@@ -52,10 +54,7 @@ void Light::CreatePointlight()
 
 void Light::UpdateLights(vec3 cameraPos)
 {
-	/*mWorldPos.x += mSpeed;
-
-	if(mWorldPos.x < -60.0 || mWorldPos.x > 60.0) 
-		mSpeed *= -1;*/
+	
 	if(GetAsyncKeyState('I') != 0)
 		mWorldPos.z -= mSpeed*2;
 
@@ -68,12 +67,6 @@ void Light::UpdateLights(vec3 cameraPos)
 	if(GetAsyncKeyState('K') != 0)
 		mWorldPos.z += mSpeed*2;
 	
-	if(GetAsyncKeyState(VK_LSHIFT) != 0)
-	{
-		mDistance = 0; 
-	}
-	else
-		mDistance = 500.0f;
 
 	if(GetAsyncKeyState(VK_CONTROL))
 		mWorldPos = cameraPos;
