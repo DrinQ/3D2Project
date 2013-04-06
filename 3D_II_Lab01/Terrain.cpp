@@ -109,7 +109,7 @@ void Terrain::CreateGrid(int width, int height, float scale)
             }
     }
 
-	VertexPoint* mGridValues = new VertexPoint[width*height];
+	mGridValues = new VertexPoint[width*height];
 
 	int dataIndex = 0;
 
@@ -204,11 +204,22 @@ void Terrain::Render(uint shaderProg)
 	mShader->UpdateUniform("Material.Ka", shaderProg, vec3(0.3, 0.3, 0.3));
 	mShader->UpdateUniform("Material.Kd", shaderProg, vec3(0.8, 0.8, 0.8));
 	mShader->UpdateUniform("Material.Ks", shaderProg, vec3(0.0, 0.0, 0.0));
-	mShader->UpdateUniform("Material.Shininess", shaderProg, 0.8f);
+	mShader->UpdateUniform("Material.Shininess", shaderProg, 0.5f);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mTexureHandle);
 
 	glBindVertexArray(mVAOHandle);
 	glDrawElements( GL_TRIANGLES, (mWidth-1)*(mHeight-1)*6, GL_UNSIGNED_INT, this->mIndices);
+}
+
+float Terrain::GetY(float x, float z)
+{
+	for(int i = 0; i < mWidth*mHeight; i++)
+	{
+		if(glm::abs(mGridValues[i].position.x - x) <= 0.5 && glm::abs(mGridValues[i].position.z - z) <= 0.5)
+		{
+			return mGridValues[i].position.y;
+		}
+	}
 }

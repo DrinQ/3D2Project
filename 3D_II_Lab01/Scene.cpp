@@ -10,7 +10,7 @@ Scene::Scene(int windowWidth, int windowHeight)
 	mSkyBox = SkyBox("../Textures/CubeMaps/skybox", windowWidth, windowHeight);
 	mSkyBox.BindBuffers();
 
-	La = 0.3f;
+	La = 0.8f; //Ambient light
 }
 
 
@@ -24,7 +24,7 @@ Scene::~Scene()
 
 void Scene::CreateObjects()
 {
-	mTerrain = new Terrain(257, 257, "../Textures/heightMap.raw", 150.0f, 0.0f, 3.0f, "../Textures/terrain.jpg");
+	mTerrain = new Terrain(257, 257, "../Textures/heightMap.raw", 30.0f, 0.0f, 3.0f, "../Textures/seamlessGrass.jpg");
 
 	mGroundQuad = Object3D(vec3(0), 300.0, vec3(0.0));
 	mGroundQuad.CreateQuad("../Textures/groundStone.jpg", "JPG");
@@ -32,13 +32,13 @@ void Scene::CreateObjects()
 	mBthObject = Object3D(vec3(70, 0, 0), 0.5f, vec3(0.0));
 	mBthObject.CreateObjFromFile("../Objects/PepsiCan/Pepsi_Max_Can.obj");
 
-	mHouse = Object3D(vec3(-30, 0, -45), 0.9f, vec3(0.0, 125.0, 0.0));
+	mHouse = Object3D(vec3(360, 2, 280), 0.9f, vec3(0.0, 100.0, 0.0));
 	mHouse.CreateObjFromFile("../Objects/TestHouse/houseA_obj.obj");
 	
 	for(int i = 0; i < 3; i++)
 	{
 		for(int j = 0; j < 3; j++)
-			mTreeList.push_back(new Object3D(vec3(10-i*25, 0, 60+i*2 + j*32), (rand() % 140 + 100)*0.01f, vec3(0.0)));
+			mTreeList.push_back(new Object3D(vec3(230-i*25, 5, 340+i*2 + j*32), (rand() % 140 + 100)*0.01f, vec3(0.0)));
 	}
 	mTreeList[0]->CreateObjFromFile("../Objects/Gran/gran.obj");
 	for(int i = 1; i < mTreeList.size(); i++)
@@ -49,10 +49,10 @@ void Scene::CreateObjects()
 
 void Scene::CreateLights(int shadowMapRes)
 {
-	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(37, -72, -26), vec3(0.0f, 1.0f, 0.9f), vec3(0.7f, 0.7f, 1.0f), 500.0f, 0.2f));
+	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(37, -102, 26), vec3(0.0f, 1.0f, 0.9f), vec3(0.8f, 0.8f, 1.0f), 500.0f, 0.2f));
 	mPointLights[0]->CreatePointlight("../Textures/pointLight01.png", "png");
 
-	mPointLights.push_back(new Light(vec3(100.0f, 80.0f, 100.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.2f, 0.2f), 500.0f, 0.2f));
+	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(100, -112, -90), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.6f, 0.6f), 500.0f, 0.2f));
 	//mPointLights.push_back(new Light(vec3(500.0f, 85.0f, 15.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 1.0f, 1.0f), 500.0f, 0.2f));
 
 	for(int i = 0; i < mPointLights.size(); i++)
@@ -194,7 +194,7 @@ void Scene::Update()
 		mShadowMapList[i]->SetLightPos(mPointLights[i]->GetWorldPos());
 	}
 
-	mBthObject.Update();
+	mHouse.Update();
 }
 
 void Scene::RenderSkyBox()
@@ -262,9 +262,7 @@ void Scene::RenderObjects()
 	float tileSize = 1.0;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
 
-	SetValues(mTerrain->GetModelMatrix());
-	mTerrain->Render(shaderProgHandle);
-
+	
 	SetValues(mBthObject.GetModelMatrix());
 	mBthObject.Render(shaderProgHandle);
 
@@ -282,6 +280,12 @@ void Scene::RenderObjects()
 
 	SetValues(mGroundQuad.GetModelMatrix());
 	mGroundQuad.Render(shaderProgHandle);
+
+	tileSize = 0.05f;
+	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
+
+	SetValues(mTerrain->GetModelMatrix());
+	mTerrain->Render(shaderProgHandle);
 
 	//glBindTexture(GL_TEXTURE_2D, 0); 
 }

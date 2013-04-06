@@ -10,7 +10,7 @@ bool mousein = false;
 
 Camera::Camera(void)
 {
-	camX = 40.0, camY = 140.0, camZ = 150.0;
+	camX = 440.0, camY = 140.0, camZ = 450.0;
 	camYaw = 18.0;
 	camPitch = -42.0;
 }

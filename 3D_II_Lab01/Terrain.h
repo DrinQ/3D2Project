@@ -10,6 +10,7 @@ class Terrain
 private:
 	int mWidth, mHeight;
 	vector<float> mHeightMap;
+	VertexPoint* mGridValues;
 	uint* mIndices;
 	ShaderHandler* mShader;
 
@@ -30,7 +31,8 @@ public:
 	void RenderGeometry();
 	void Render(uint shaderProg);
 	mat4 GetModelMatrix()
-	{ return mat4(1.0f) * glm::translate(vec3(150.0f, -100.0f, -100.0f)); }
+	{ return mat4(1.0f) * glm::translate(vec3(0, 0, 0)); }
+	float GetY(float x, float z);
 };
 
 #endif

@@ -36,7 +36,8 @@ vec3 phongModelDiffAndSpec(int index, vec3 lightPos, float strength) {
 
 		vec3 s = normalize(vec3(lightPos - ViewPosition));
 		vec3 v = normalize(-ViewPosition.xyz);	
-		vec3 r = reflect( -s, normal );
+		//vec3 r = reflect( -s, normal );
+		vec3 h = normalize(v + s);
 
 		float sDotN = max( dot(s, normal), 0.0 );
 	
@@ -54,7 +55,7 @@ vec3 phongModelDiffAndSpec(int index, vec3 lightPos, float strength) {
 	
 		//Specular light
 		if( sDotN > 0.0 )
-			specular = vec3(Lights[index].Intensity.z) * Lights[index].Color * Ks * pow( max( dot(r,v), 0.0 ), Material.Shininess ) * strength;
+			specular = vec3(Lights[index].Intensity.z) * Lights[index].Color * Ks * pow( max( dot(h,v), 0.0 ), Material.Shininess ) * strength;
 		
 		return vec3(diffuse + specular);
 }

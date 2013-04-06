@@ -6,7 +6,7 @@ int windowWidth = 1280;
 int windowHeight = 720;
 int frameCount = 0;
 char windowTitle[128] = "Project 3DII";
-int shadowMapRes = 4096*0.5; 
+int shadowMapRes = 4096; 
 
 Scene* mScene;
 
@@ -132,7 +132,6 @@ int main(int argc, char** argv){
 	mScene->CreateShaderPrograms();
 	mScene->CreateObjects();
 	mScene->CreateLights(shadowMapRes);
-	//mScene->CreateShadowMap(shadowMapRes);
 	
 	mScene->SetStaticUniforms();
 	
@@ -142,6 +141,7 @@ int main(int argc, char** argv){
 	int timeCounter = 0;
 	while(true) {
 
+		
 		int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
 		int deltaTime = timeSinceStart - oldTimeSinceStart;
 		oldTimeSinceStart = timeSinceStart;
