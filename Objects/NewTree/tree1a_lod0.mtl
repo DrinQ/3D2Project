@@ -1,0 +1,19 @@
+newmtl bark
+illum 4
+Kd 0.60 0.60 0.60
+Ka 0.50 0.50 0.50
+Ks 0.10 0.10 0.10
+Tf 1.00 1.00 1.00
+Ns 3.00
+map_Kd bark1.tga
+Ni 1.00
+
+newmtl leaf
+illum 4
+Kd 0.60 0.60 0.60
+Ka 0.50 0.50 0.50
+Ks 0.10 0.10 0.10
+Tf 1.00 1.00 1.00
+Ns 3.00
+map_Kd leafs1.tga
+Ni 1.00

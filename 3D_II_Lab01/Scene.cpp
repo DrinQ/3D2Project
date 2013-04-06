@@ -35,12 +35,12 @@ void Scene::CreateObjects()
 	mHouse = Object3D(vec3(360, 2, 280), 0.9f, vec3(0.0, 100.0, 0.0));
 	mHouse.CreateObjFromFile("../Objects/TestHouse/houseA_obj.obj");
 	
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < 1; i++)
 	{
 		for(int j = 0; j < 3; j++)
-			mTreeList.push_back(new Object3D(vec3(230-i*25, 5, 340+i*2 + j*32), (rand() % 140 + 100)*0.01f, vec3(0.0)));
+			mTreeList.push_back(new Object3D(vec3(230-i*35, 5, 340+i*2 + j*45), (rand() % 140 + 100)*0.08f, vec3(0.0)));
 	}
-	mTreeList[0]->CreateObjFromFile("../Objects/Gran/gran.obj");
+	mTreeList[0]->CreateObjFromFile("../Objects/HQGran/tree1.obj");
 	for(int i = 1; i < mTreeList.size(); i++)
 	{
 		mTreeList[i]->SetMeshList(mTreeList[0]->GetMeshList());
@@ -52,7 +52,7 @@ void Scene::CreateLights(int shadowMapRes)
 	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(37, -102, 26), vec3(0.0f, 1.0f, 0.9f), vec3(0.8f, 0.8f, 1.0f), 500.0f, 0.2f));
 	mPointLights[0]->CreatePointlight("../Textures/pointLight01.png", "png");
 
-	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(100, -112, -90), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.6f, 0.6f), 500.0f, 0.2f));
+	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(130, -112, -90), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.6f, 0.6f), 500.0f, 0.2f));
 	mPointLights.push_back(new Light(vec3(400.0f, 85.0f, 250.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 1.0f, 1.0f), 300.0f, 0.2f));
 
 	for(int i = 0; i < mPointLights.size(); i++)
@@ -275,12 +275,7 @@ void Scene::RenderObjects()
 	SetValues(mHouse.GetModelMatrix());
 	mHouse.Render(shaderProgHandle);
 
-	for(UINT j = 0; j < mTreeList.size(); j++)
-	{
-		SetValues(mTreeList[j]->GetModelMatrix());
-		mTreeList[j]->Render(shaderProgHandle);
-	}
-
+	
 	tileSize = 0.1f;
 	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
 
@@ -292,6 +287,15 @@ void Scene::RenderObjects()
 
 	SetValues(mTerrain->GetModelMatrix());
 	mTerrain->Render(shaderProgHandle);
+
+	tileSize = 1.0f;
+	glUniform1fv(glGetUniformLocation(shaderProgHandle, "TileSize"), 1, &tileSize);
+
+	for(UINT j = 0; j < mTreeList.size(); j++)
+	{
+		SetValues(mTreeList[j]->GetModelMatrix());
+		mTreeList[j]->Render(shaderProgHandle);
+	}
 
 	//glBindTexture(GL_TEXTURE_2D, 0); 
 }
