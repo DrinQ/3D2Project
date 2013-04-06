@@ -208,13 +208,13 @@ int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, ma
 }
 
 
-int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, bool value)
+int ShaderHandler::UpdateUniform(const char* variable, uint shaderProgHandle, int value)
 {
 	glUseProgram(shaderProgHandle);
 	//use same name for value in shader 
 	uint location = glGetUniformLocation(shaderProgHandle, variable);
 	if( location < 999 )
-		{ glUniform1f(location, value); }
+		{ glUniform1i(location, value); }
 	else{ cout << variable << " in shader not found." << endl; system("pause"); return 1; }
 
 	return 0;

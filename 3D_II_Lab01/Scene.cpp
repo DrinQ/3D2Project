@@ -53,7 +53,7 @@ void Scene::CreateLights(int shadowMapRes)
 	mPointLights[0]->CreatePointlight("../Textures/pointLight01.png", "png");
 
 	mPointLights.push_back(new Light(mHouse.GetPosition()-vec3(100, -112, -90), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 0.6f, 0.6f), 500.0f, 0.2f));
-	//mPointLights.push_back(new Light(vec3(500.0f, 85.0f, 15.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 1.0f, 1.0f), 500.0f, 0.2f));
+	mPointLights.push_back(new Light(vec3(400.0f, 85.0f, 250.0f), vec3(0.0f, 1.0f, 0.9f), vec3(1.0f, 1.0f, 1.0f), 300.0f, 0.2f));
 
 	for(int i = 0; i < mPointLights.size(); i++)
 	{
@@ -79,12 +79,18 @@ void Scene::SetStaticUniforms()
 		glUniform1i(loc, 2);
 	/*loc = glGetUniformLocation(shaderProgHandle, "SpecMap");
 		glUniform1i(loc, 3);*/
-	loc = glGetUniformLocation(shaderProgHandle, "ShadowMaps[0]");
-		glUniform1i(loc, 5);
-	loc = glGetUniformLocation(shaderProgHandle, "ShadowMaps[1]");
-		glUniform1i(loc, 6);
+	for(int i = 0; i < mShadowMapList.size(); i++)
+	{
+		char indexStr[3];		itoa(i, indexStr, 10);
+		char shadowString[20];
+		strcpy(shadowString, "ShadowMaps[");	strcat(shadowString, indexStr);		strcat(shadowString, "]");
+
+		loc = glGetUniformLocation(shaderProgHandle, shadowString);
+			glUniform1i(loc, i+5);
+	}
 
 	mShaderHandler->UpdateUniform("BiasMatrix", shaderProgHandle, mShadowMapList[0]->GetBiasMatrix());
+	mShaderHandler->UpdateUniform("nrOfLights", shaderProgHandle, (int)mPointLights.size());
 
 	for(int i = 0; i < mPointLights.size(); i++)
 	{

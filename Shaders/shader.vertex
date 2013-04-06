@@ -8,8 +8,9 @@ out vec4 ViewPosition;
 out vec3 TNormal;
 out vec2 TexCoord;
 
+
 // Coordinate to be used for shadow map lookup 
-out vec4 ShadowCoord[2];
+out vec4 ShadowCoord[10];
 
 //Matrices-----------------------------------------
 uniform mat4 ModelMatrix;
@@ -17,7 +18,8 @@ uniform mat4 ViewMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 ProjectionMatrix;		   
 uniform mat4 BiasMatrix;
-uniform mat4 ShadowViewProj[2];
+uniform mat4 ShadowViewProj[10];
+uniform int nrOfLights;
 
 void main()
 {
@@ -30,7 +32,7 @@ void main()
 	mat4 MVP = ProjectionMatrix * ModelViewMatrix;
 
 	// ShadowMatrix converts from modeling coordinates to shadow map coordinates.  
-	for(int i = 0; i < 2; i++)
+	for(int i = 0; i < nrOfLights; i++)
 	{
 		ShadowCoord[i] = BiasMatrix * ShadowViewProj[i] * ModelMatrix * vec4(VertexPosition,1.0);
 	}

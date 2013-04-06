@@ -18,7 +18,7 @@ public:
 	int UpdateUniform(const char* variable, uint shaderProgHandle, vec4 value); 
 	int UpdateUniform(const char* variable, uint shaderProgHandle, mat3 matrix);
 	int UpdateUniform(const char* variable, uint shaderProgHandle, mat4 matrix);
-	int UpdateUniform(const char* variable, uint shaderProgHandle, bool value);
+	int UpdateUniform(const char* variable, uint shaderProgHandle, int value);
 };
 
 #endif
